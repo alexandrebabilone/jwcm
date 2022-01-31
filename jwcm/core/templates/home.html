@@ -1,0 +1,13 @@
+{% extends "base.html" %}
+
+{% block title %}Gerenciador de Congregação{% endblock %}
+
+{% block content %}
+  {% include 'carousel.html' only %}
+
+  <div class="container marketing">
+    {% include 'three_contents.html' only %}
+    {% include 'featurettes.html' only %}
+  </div>
+
+{% endblock %}
