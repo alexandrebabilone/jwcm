@@ -1,0 +1,76 @@
+{% extends "base.html" %}
+{% load static %}
+{% block title %}Cadastro de usuário{% endblock %}
+
+{% block content%}
+<form method="POST">
+    {% csrf_token %}
+    {{ user_form }}
+    <br>
+    {{ congregation_choice_form }}
+    {{ congregation_form }}
+
+    <button type="submit" class="btn btn-primary mt-3">
+        <i class="fas fa-check"></i> Cadastrar
+    </button>
+</form>
+{% endblock%}
+
+
+{% block scripts %}
+<script>
+
+function change_required(id_element, visibility){
+    if (visibility == 'block'){
+        document.getElementById(id_element).setAttribute('required', true);
+    }
+    else{
+        document.getElementById(id_element).removeAttribute('required');
+    }
+}
+
+function change_display_label(id_elem, visibility) {
+   labels = document.getElementsByTagName('label');
+
+   for(var i = 0; i < labels.length; i++ ) {
+      if (labels[i].htmlFor == id_elem){
+           labels[i].style.display = visibility;
+      }
+   }
+}
+
+function change_display_elements(visibility){
+    const id_fields = ["id_name", "id_number", "id_midweek_meeting_time", "id_weekend_meeting_time", "id_midweek_meeting_day", "id_weekend_meeting_day"];
+
+    for (let i = 0; i < id_fields.length; i++){
+        document.getElementById(id_fields[i]).style.display = visibility;
+        change_required(id_fields[i], visibility);
+        change_display_label(id_fields[i], visibility);
+    }
+}
+
+
+function change_congregation_key_field(visibility){
+    const id_element = 'id_congregation_key';
+
+    document.getElementById(id_element).style.display = visibility;
+    change_required(id_element, visibility);
+    change_display_label(id_element, visibility);
+}
+
+function change_congregation_choice(){
+    if (document.getElementById('id_congregation_choice_0').checked){
+        change_congregation_key_field('block')
+        change_display_elements('none')
+    }
+    else{
+        change_congregation_key_field('none')
+        change_display_elements('block')
+    }
+}
+
+window.onload = change_congregation_choice;
+</script>
+{% endblock %}
+
+

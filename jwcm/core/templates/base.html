@@ -38,10 +38,10 @@
     <link href="{% static 'css/carousel.css' %}" rel="stylesheet">
   </head>
   <body>
-
+    {% include 'messages.html' %}
 
 <div class="header-frame row">
-  {% include 'nav.html' only %}
+  {% include 'nav.html' with user=request.user only %}
 </div>
 
 
@@ -53,8 +53,10 @@
 <footer class="container">
   {% include 'footer.html' only %}
 </footer>
+<script src="{% static 'js/bootstrap.js' %}"></script>
 
-    <script src="{% static 'js/bootstrap.js' %}"></script>
+    {% block scripts %}
+    {% endblock %}
 
   </body>
 </html>

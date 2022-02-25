@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+{% block title %}Autenticação{% endblock %}
+
+{% block content%}
+<form method="POST">
+    {% csrf_token %}
+    {{ form }}
+    <p>
+        <a class="navbar-brand" href="{% url 'register' %}">É a primeira vez por aqui? Crie seu
+            perfil</a>
+    </p>
+    <button type="submit" class="btn btn-primary mt-3">
+        <i class="fas fa-check"></i> Entrar
+    </button>
+</form>
+{% endblock%}

@@ -15,11 +15,20 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path
-from jwcm.core.views import HomeView, AboutView
+from jwcm.core.views import HomeView, AboutView, user_register, ProfileUpdateView, CongregationUpdateView
+from django.contrib.auth import views as authview
 
 
 urlpatterns = [
     path('', HomeView.as_view(), name='home'),
+
+    path('login/', authview.LoginView.as_view(template_name='core/login.html'), name='login'),
+    path('logout/', authview.LogoutView.as_view(), name='logout'),
     path('about/', AboutView.as_view(), name='about'),
+    path('register/', user_register, name='register'),
+
+    path('profile/<int:pk>/', ProfileUpdateView.as_view(), name='profile'),
+    path('congregation/<int:pk>/', CongregationUpdateView.as_view(), name='congregation'),
+
     path('admin/', admin.site.urls),
 ]
