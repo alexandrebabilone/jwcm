@@ -15,20 +15,36 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path
-from jwcm.core.views import HomeView, AboutView, user_register, ProfileUpdateView, CongregationUpdateView
+from jwcm.core.views import Home, About, user_register, public_assignment_create, ProfileUpdate, CongregationUpdate, PersonList, \
+    PersonCreate, PersonUpdate, PersonDelete, SpeechList, SpeechCreate, PublicAssignmentList, public_assignment_update, PublicAssignmentDelete, SpeechDelete, SpeechUpdate
 from django.contrib.auth import views as authview
 
 
 urlpatterns = [
-    path('', HomeView.as_view(), name='home'),
+    path('', Home.as_view(), name='home'),
 
     path('login/', authview.LoginView.as_view(template_name='core/login.html'), name='login'),
     path('logout/', authview.LogoutView.as_view(), name='logout'),
-    path('about/', AboutView.as_view(), name='about'),
+    path('about/', About.as_view(), name='about'),
     path('register/', user_register, name='register'),
 
-    path('profile/<int:pk>/', ProfileUpdateView.as_view(), name='profile'),
-    path('congregation/<int:pk>/', CongregationUpdateView.as_view(), name='congregation'),
+    path('profile/<int:pk>/', ProfileUpdate.as_view(), name='profile'),
+    path('congregation/<int:pk>/', CongregationUpdate.as_view(), name='congregation'),
+
+    path('person/', PersonList.as_view(), name='person-list'),
+    path('person/create/', PersonCreate.as_view(), name='person-create'),
+    path('person/update/<int:pk>/', PersonUpdate.as_view(), name='person-update'),
+    path('person/delete/<int:pk>/', PersonDelete.as_view(), name='person-delete'),
+
+    path('speech/', SpeechList.as_view(), name='speech-list'),
+    path('speech/create/', SpeechCreate.as_view(), name='speech-create'),
+    path('speech/update/<int:pk>/', SpeechUpdate.as_view(), name='speech-update'),
+    path('speech/delete/<int:pk>/', SpeechDelete.as_view(), name='speech-delete'),
+
+    path('public_assignment/', PublicAssignmentList.as_view(), name='public-assignment-list'),
+    path('public_assignment/create/', public_assignment_create, name='public-assignment-create'),
+    path('public_assignment/update/<int:pk>/', public_assignment_update, name='public-assignment-update'),
+    path('public_assignment/delete/<int:pk>/', PublicAssignmentDelete.as_view(), name='public-assignment-delete'),
 
     path('admin/', admin.site.urls),
 ]

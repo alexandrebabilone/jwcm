@@ -1,0 +1,83 @@
+{% extends "base.html" %}
+{% block title %}Discursos Públicos{% endblock %}
+
+{% block content%}
+<h3>Discursos Públicos</h3>
+
+<hr>
+<a href="{% url 'speech-create' %}" class="btn btn-primary">
+    <i class="fas fa-plus"></i> Cadastrar
+</a>
+<br><br>
+
+
+<div class="table responsive">
+    <table class="table table-striped" id="table-speech">
+        <thead>
+            <tr>                
+                <th>Número</th>
+                <th>Tema</th>
+                <th>Opções</th>
+            </tr>
+        </thead>
+
+        <tbody>
+            {% for speech in object_list %}
+            <tr>                
+                <td> {{ speech.number }} </td>
+                <td> {{ speech.theme }} </td>
+                <td>
+                    <a href="{{speech.get_update_url}}" class="btn btn-warning" title="Editar">
+                        <i class="fas fa-pencil"></i>
+                    </a>
+                    <a href="speech.get_delete_url" class="btn btn-danger" title="Excluir">
+                        <i class="fas fa-trash-can"></i>
+                    </a>
+                </td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td>Nenhum registro.</tD>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock%}
+
+{% block scripts %}
+<script>
+    $(document).ready(function () {
+        $('#table-speech').DataTable({
+            responsive: true,
+            // "bSort": false,
+            "aaSorting": [[0, "asc"]],
+            "pageLength": 50,
+            "language": {
+                "decimal": "",
+                "emptyTable": "Sem dados disponíveis",
+                "info": "Mostrando de _START_ até _END_ de _TOTAL_ registros",
+                "infoEmpty": "Mostrando de 0 até 0 de 0 registros",
+                "infoFiltered": "(filtrado de _MAX_ registos no total)",
+                "infoPostFix": "",
+                "thousands": ",",
+                "lengthMenu": "Mostrar _MENU_ registros",
+                "loadingRecords": "A carregar dados...",
+                "processing": "A processar...",
+                "search": "Procurar:",
+                "zeroRecords": "Não foram encontrados resultados",
+                "paginate": {
+                    "first": "Primeiro",
+                    "last": "Último",
+                    "next": "Seguinte",
+                    "previous": "Anterior"
+                },
+                "aria": {
+                    "sortAscending": ": ordem crescente",
+                    "sortDescending": ": ordem decrescente"
+                }
+            }
+        });
+    });
+</script>
+{% endblock %}

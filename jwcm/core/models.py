@@ -2,6 +2,7 @@ from django.db import models
 from datetime import time
 from django.contrib.auth.models import User
 from django.shortcuts import resolve_url as r
+from django.urls import reverse_lazy
 
 
 class Congregation(models.Model):
@@ -54,6 +55,12 @@ class Speech(models.Model):
         verbose_name = 'discurso'
         verbose_name_plural = 'discursos'
 
+    def get_update_url(self):
+        return reverse_lazy("speech-update", kwargs={"pk": self.id})
+
+    def get_delete_url(self):
+        return reverse_lazy("speech-delete", kwargs={"pk": self.id})
+
 
 class Person(models.Model):
     MASCULINO = 0
@@ -89,14 +96,22 @@ class Person(models.Model):
     )
 
     full_name = models.CharField(max_length=50, null=True, verbose_name='Nome completo')
-    telephone = models.CharField(max_length=16, blank=True, default='(00)00000-0000', verbose_name='Telefone')
+    telephone = models.CharField(max_length=16, blank=True, verbose_name='Telefone')
 
     gender = models.IntegerField(choices=GENDER, default=MASCULINO, verbose_name='Sexo')
     privilege = models.IntegerField(choices=PRIVILEGE, default=SEM_PRIVILEGIO_ESPECIAL, verbose_name='Privilégio especial')
     modality = models.IntegerField(choices=MODALITY, default=PUBLICADOR, verbose_name='Ministério')
+    reader = models.BooleanField(default=False, verbose_name='Leitor')
+    indicator_mic = models.BooleanField(default=False, verbose_name='Indicador/Microfone')
+    student_parts = models.BooleanField(default=True, verbose_name='Partes de Estudante')
 
     congregation = models.ForeignKey(Congregation, on_delete=models.PROTECT, null=True)
 
+    def get_update_url(self):
+        return reverse_lazy("person-update", kwargs={"pk": self.id})
+
+    def get_delete_url(self):
+        return reverse_lazy("person-delete", kwargs={"pk": self.id})
 
     def __str__(self):
         return f'{self.full_name}'
@@ -120,3 +135,19 @@ class Profile(models.Model):
     class Meta:
         verbose_name = 'perfil'
         verbose_name_plural = 'perfis'
+
+
+class PublicAssignment(models.Model):
+    congregation = models.ForeignKey(Congregation, on_delete=models.PROTECT)
+    speech = models.ForeignKey(Speech, on_delete=models.PROTECT, null=True, verbose_name='Discurso')
+    speaker = models.ForeignKey(Person, on_delete=models.PROTECT, null=True, verbose_name='Orador')
+    date = models.DateField(unique=True, verbose_name='Data')
+
+    def get_update_url(self):
+        return reverse_lazy('public-assignment-update', kwargs={"pk": self.id})
+
+    def get_delete_url(self):
+        return reverse_lazy("public-assignment-delete", kwargs={"pk": self.id})
+
+    def __str__(self):
+        return f'Designação do dia {self.date}, discurso {self.speech}'

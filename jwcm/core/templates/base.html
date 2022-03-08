@@ -8,6 +8,10 @@
     <meta name="author" content="Mark Otto, Jacob Thornton, and Bootstrap contributors">
     <meta name="generator" content="Hugo 0.88.1">
 
+    <link rel="shortcut icon" type="image/png" href="{% static 'favicon.ico' %}"/>
+
+
+
     <title>
       {% block title %}Gerenciador de Congregação{% endblock %}
     </title>
@@ -16,7 +20,7 @@
 
 
     <!-- Bootstrap core CSS -->
-<link href="{% static 'css/bootstrap.css' %}" rel="stylesheet">
+    <link href="{% static 'css/bootstrap.css' %}" rel="stylesheet">
 
     <style>
       .bd-placeholder-img {
@@ -36,6 +40,11 @@
     
     <!-- Custom styles for this template -->
     <link href="{% static 'css/carousel.css' %}" rel="stylesheet">
+    <script src="https://kit.fontawesome.com/0703757d92.js" crossorigin="anonymous"></script>
+    <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/v/bs5/dt-1.11.5/r-2.2.9/datatables.min.css"/>
+
+
+
   </head>
   <body>
     {% include 'messages.html' %}
@@ -54,7 +63,9 @@
   {% include 'footer.html' only %}
 </footer>
 <script src="{% static 'js/bootstrap.js' %}"></script>
-
+<script src="{% static 'js/jquery-3.6.0.min.js' %}"></script>
+<script src="{% static 'js/jquery.mask.min.js' %}"></script>
+<script type="text/javascript" src="https://cdn.datatables.net/v/bs5/dt-1.11.5/r-2.2.9/datatables.min.js"></script>
     {% block scripts %}
     {% endblock %}
 

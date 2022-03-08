@@ -41,8 +41,13 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'stronghold',
+    'crispy_forms',
+    'crispy_bootstrap5',
     'jwcm.core',
 ]
+
+CRISPY_ALLOWED_TEMPLATE_PACKS = 'bootstrap5'
+CRISPY_TEMPLATE_PACK = 'bootstrap5'
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
@@ -135,5 +140,6 @@ STRONGHOLD_PUBLIC_NAMED_URLS = (
     'login',
     'logout',
     'home',
-    'register'
+    'register',
+    'about',
 )

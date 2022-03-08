@@ -1,8 +1,11 @@
+import datetime
+
 from django import forms
 from django.core.exceptions import ValidationError
-from jwcm.core.models import Speech, Congregation, Person, Profile
+from jwcm.core.models import Speech, Congregation, Person, PublicAssignment
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth.models import User
+from jwcm.core.widget import DatePickerInput
 
 
 class PersonForm(forms.ModelForm):
@@ -51,3 +54,19 @@ class CongregationChoiceForm(forms.Form):
 
     congregation_choice = forms.ChoiceField(label='Defina sua Congregação', widget=forms.RadioSelect(attrs={'onclick':'change_congregation_choice()'}), choices=CHOICES, initial=CONGREGACAO_EXISTENTE)
     congregation_key = forms.CharField(max_length=50, label='Código da Congregação', required=False)
+
+
+class PublicAssignmentForm(forms.ModelForm):
+
+    class Meta:
+        model = PublicAssignment
+        fields = ['date', 'speech', 'speaker']
+        widgets = {
+            'date': DatePickerInput(format=('%Y-%m-%d'), attrs={}),
+        }
+
+
+    def __init__(self, *args, **kwargs):
+        self.request = kwargs.pop('request')
+        super(PublicAssignmentForm, self).__init__(*args, **kwargs)
+        self.fields['speaker'].queryset = Person.objects.filter(congregation=self.request.user.profile.congregation)

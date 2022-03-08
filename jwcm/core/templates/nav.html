@@ -9,10 +9,16 @@
 
       <div class="collapse navbar-collapse" id="navbarCollapse">
         <ul class="navbar-nav me-auto mb-2 mb-md-0">
-          <li class="nav-item">
-            <a class="nav-link active" aria-current="page" href="{% url 'home' %}">Home</a>
-          </li>
           {% if user.is_authenticated %}
+          <li class="nav-item">
+            <a class="nav-link active" aria-current="page" href="{% url 'speech-list' %}">Discursos públicos</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link active" aria-current="page" href="{% url 'public-assignment-list' %}">Arranjo de Oradores</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link active" aria-current="page" href="{% url 'person-list' %}">Publicadores</a>
+          </li>
           <li class="nav-item">
             <a class="nav-link active" aria-current="page" href="{% url 'congregation' user.profile.congregation.pk %}">Congregação</a>
           </li>
