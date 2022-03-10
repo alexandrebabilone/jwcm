@@ -46,10 +46,10 @@ class Congregation(models.Model):
 
 class Speech(models.Model):
     number = models.IntegerField(unique=True, verbose_name='Número')
-    theme = models.CharField(max_length=80, unique=True, verbose_name='Tema')
+    theme = models.CharField(max_length=80, verbose_name='Tema')
 
     def __str__(self):
-        return f'{self.theme} ({self.number})'
+        return f'{self.number} - {self.theme}'
 
     class Meta:
         verbose_name = 'discurso'

@@ -1,10 +1,11 @@
 {% extends "base.html" %}
+{% load crispy_forms_tags %}
 {% block title %}Autenticação{% endblock %}
 
 {% block content%}
 <form method="POST">
     {% csrf_token %}
-    {{ form }}
+    {{ form|crispy }}
     <p>
         <a class="navbar-brand" href="{% url 'register' %}">É a primeira vez por aqui? Crie seu
             perfil</a>

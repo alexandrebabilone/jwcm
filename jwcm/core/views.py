@@ -1,4 +1,6 @@
+from django.core.exceptions import ImproperlyConfigured
 from django.core.management.utils import get_random_secret_key
+from django.db.models.deletion import ProtectedError
 from django.views.generic import TemplateView, UpdateView, ListView, CreateView, DeleteView
 from django.http import HttpResponseRedirect
 from jwcm.core.forms import CongregationChoiceForm, UserForm, CongregationForm, PublicAssignmentForm
@@ -15,6 +17,8 @@ class Home(TemplateView):
 class About(TemplateView):
     template_name = 'about.html'
 
+
+#******************** SUPERUSER FUNCTIONS ********************#
 
 #******************** CREATE ********************#
 def user_register(request):
@@ -256,9 +260,19 @@ class SpeechDelete(DeleteView):
     model = Speech
     success_url = reverse_lazy('speech-list')
     success_message = "O discurso %(number)s foi excluído com sucesso."
+    error_url = success_url
+
 
     def get_context_data(self, *args, **kwargs):
         context = super().get_context_data(*args, **kwargs)
         context['title'] = 'Excluir Discurso'
         context['button'] = 'Excluir'
         return context
+
+
+    def form_valid(self, form):
+        try:
+            return super().form_valid(form)
+        except ProtectedError:
+            messages.error(self.request, f'Não é possível excluír o Discurso {self.object}, pois está associado a outro registro.')
+            return HttpResponseRedirect(self.error_url)

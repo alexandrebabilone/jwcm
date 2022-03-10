@@ -1,14 +1,15 @@
 {% extends "base.html" %}
+{% load crispy_forms_tags %}
 {% load static %}
 {% block title %}Cadastro de usuário{% endblock %}
 
 {% block content%}
 <form method="POST">
     {% csrf_token %}
-    {{ user_form }}
+    {{ user_form|crispy }}
     <br>
-    {{ congregation_choice_form }}
-    {{ congregation_form }}
+    {{ congregation_choice_form|crispy }}
+    {{ congregation_form|crispy }}
 
     <button type="submit" class="btn btn-primary mt-3">
         <i class="fas fa-check"></i> Cadastrar

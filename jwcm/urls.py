@@ -22,10 +22,10 @@ from django.contrib.auth import views as authview
 
 urlpatterns = [
     path('', Home.as_view(), name='home'),
+    path('about/', About.as_view(), name='about'),
 
     path('login/', authview.LoginView.as_view(template_name='core/login.html'), name='login'),
     path('logout/', authview.LogoutView.as_view(), name='logout'),
-    path('about/', About.as_view(), name='about'),
     path('register/', user_register, name='register'),
 
     path('profile/<int:pk>/', ProfileUpdate.as_view(), name='profile'),
@@ -45,6 +45,7 @@ urlpatterns = [
     path('public_assignment/create/', public_assignment_create, name='public-assignment-create'),
     path('public_assignment/update/<int:pk>/', public_assignment_update, name='public-assignment-update'),
     path('public_assignment/delete/<int:pk>/', PublicAssignmentDelete.as_view(), name='public-assignment-delete'),
+
 
     path('admin/', admin.site.urls),
 ]
