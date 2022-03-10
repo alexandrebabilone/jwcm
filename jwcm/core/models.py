@@ -1,7 +1,6 @@
 from django.db import models
 from datetime import time
 from django.contrib.auth.models import User
-from django.shortcuts import resolve_url as r
 from django.urls import reverse_lazy
 
 

@@ -8,6 +8,7 @@ from django.shortcuts import get_object_or_404, render, resolve_url as r
 from django.urls import reverse_lazy
 from django.contrib import messages
 from jwcm.core.models import Congregation, Profile, Person, Speech, PublicAssignment
+from django.contrib.messages.views import SuccessMessageMixin
 
 
 class Home(TemplateView):
@@ -80,7 +81,7 @@ def public_assignment_create(request):
 
         public_assignment_form.instance.congregation = request.user.profile.congregation
         public_assignment_form.save()
-        messages.success(request, f"Designação do dia {public_assignment_form.cleaned_data['date']} criada com sucesso.")
+        messages.success(request, f'Designação do dia {_format_date(public_assignment_form.cleaned_data["date"])} criada com sucesso.')
         return HttpResponseRedirect(r('public-assignment-list'))
     else:
         context_data = {'form': public_assignment_form,
@@ -90,7 +91,7 @@ def public_assignment_create(request):
         return render(request, template_name, context_data)
 
 
-class PersonCreate(CreateView):
+class PersonCreate(SuccessMessageMixin, CreateView):
     model = Person
     template_name = 'core/form.html'
     fields = ['full_name', 'telephone', 'gender', 'privilege', 'modality', 'reader', 'indicator_mic', 'student_parts']
@@ -109,7 +110,7 @@ class PersonCreate(CreateView):
         return super().form_valid(form)
 
 
-class SpeechCreate(CreateView):
+class SpeechCreate(SuccessMessageMixin, CreateView):
     model = Speech
     template_name = 'core/form.html'
     fields = ['number', 'theme']
@@ -139,7 +140,7 @@ def public_assignment_update(request, pk):
             return render(request, template_name, context_data)
 
         public_assignment_form.save()
-        messages.success(request, f"Designação do dia {public_assignment_form.cleaned_data['date']} alterada com sucesso")
+        messages.success(request, f"Designação do dia {_format_date(public_assignment_form.cleaned_data['date'])} alterada com sucesso")
         return HttpResponseRedirect(r('public-assignment-list'))
 
     else:
@@ -152,11 +153,12 @@ def public_assignment_update(request, pk):
         return render(request, template_name, context_data)
 
 
-class ProfileUpdate(UpdateView):
+class ProfileUpdate(SuccessMessageMixin, UpdateView):
     template_name = 'core/form.html'
     model = Profile
     fields = ['telephone']
     success_url = reverse_lazy('home')
+    success_message = "Perfil alterado com sucesso."
 
     def get_context_data(self, *args, **kwargs):
         context = super().get_context_data(*args, **kwargs)
@@ -165,11 +167,12 @@ class ProfileUpdate(UpdateView):
         return context
 
 
-class CongregationUpdate(UpdateView):
+class CongregationUpdate(SuccessMessageMixin, UpdateView):
     template_name = 'core/form.html'
     model = Congregation
     fields = ['name', 'number', 'midweek_meeting_time', 'weekend_meeting_time', 'midweek_meeting_day', 'weekend_meeting_day', 'random_key']
     success_url = reverse_lazy('home')
+    success_message = "Congregação alterada com sucesso."
 
     def get_context_data(self, *args, **kwargs):
         context = super().get_context_data(*args, **kwargs)
@@ -178,12 +181,12 @@ class CongregationUpdate(UpdateView):
         return context
 
 
-class PersonUpdate(UpdateView):
+class PersonUpdate(SuccessMessageMixin, UpdateView):
     model = Person
     template_name = 'core/form.html'
     fields = ['full_name', 'telephone', 'gender', 'privilege', 'modality', 'reader', 'indicator_mic', 'student_parts']
     success_url = reverse_lazy('person-list')
-    success_message = "%(full_name)s foi alterado com sucesso."
+    success_message = "O registro de %(full_name)s foi alterado com sucesso."
 
     def get_context_data(self, *args, **kwargs):
         context = super().get_context_data(*args, **kwargs)
@@ -192,7 +195,7 @@ class PersonUpdate(UpdateView):
         return context
 
 
-class SpeechUpdate(UpdateView):
+class SpeechUpdate(SuccessMessageMixin, UpdateView):
     model = Speech
     template_name = 'core/form.html'
     fields = ['number', 'theme']
@@ -229,11 +232,14 @@ class PublicAssignmentList(ListView):
 
 
 #******************** DELETE ********************#
-class PersonDelete(DeleteView):
+class PersonDelete(SuccessMessageMixin, DeleteView):
     template_name = 'core/form_delete.html'
     model = Person
     success_url = reverse_lazy('person-list')
-    success_message = "O publicador %(full_name)s foi excluído com sucesso."
+
+
+    def get_success_message(self, cleaned_data):
+        return f'O publicador {self.object.full_name} foi excluído com sucesso.'
 
     def get_context_data(self, *args, **kwargs):
         context = super().get_context_data(*args, **kwargs)
@@ -242,11 +248,14 @@ class PersonDelete(DeleteView):
         return context
 
 
-class PublicAssignmentDelete(DeleteView):
+class PublicAssignmentDelete(SuccessMessageMixin, DeleteView):
     template_name = 'core/form_delete.html'
     model = PublicAssignment
     success_url = reverse_lazy('public-assignment-list')
-    success_message = "A designação do dia %(date)s foi excluída com sucesso."
+
+
+    def get_success_message(self, cleaned_data):
+        return f'A designação do dia {_format_date(self.object.date)} foi excluída com sucesso.'
 
     def get_context_data(self, *args, **kwargs):
         context = super().get_context_data(*args, **kwargs)
@@ -255,12 +264,14 @@ class PublicAssignmentDelete(DeleteView):
         return context
 
 
-class SpeechDelete(DeleteView):
+class SpeechDelete(SuccessMessageMixin, DeleteView):
     template_name = 'core/form_delete.html'
     model = Speech
     success_url = reverse_lazy('speech-list')
-    success_message = "O discurso %(number)s foi excluído com sucesso."
     error_url = success_url
+
+    def get_success_message(self, cleaned_data):
+        return f'O discurso {self.object.number} foi excluído com sucesso.'
 
 
     def get_context_data(self, *args, **kwargs):
@@ -276,3 +287,7 @@ class SpeechDelete(DeleteView):
         except ProtectedError:
             messages.error(self.request, f'Não é possível excluír o Discurso {self.object}, pois está associado a outro registro.')
             return HttpResponseRedirect(self.error_url)
+
+
+def _format_date(date):
+    return date.strftime("%d/%m/%Y")
