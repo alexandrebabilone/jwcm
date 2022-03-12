@@ -44,6 +44,7 @@ INSTALLED_APPS = [
     'stronghold',
     'crispy_forms',
     'crispy_bootstrap5',
+    'django_extensions',
     'jwcm.core',
 ]
 
