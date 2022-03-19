@@ -3,12 +3,13 @@ from django.core.management.utils import get_random_secret_key
 from django.db.models.deletion import ProtectedError
 from django.views.generic import TemplateView, UpdateView, ListView, CreateView, DeleteView
 from django.http import HttpResponseRedirect
-from jwcm.core.forms import CongregationChoiceForm, UserForm, CongregationForm, PublicAssignmentForm
+from jwcm.core.forms import CongregationChoiceForm, UserForm, CongregationForm, PublicAssignmentForm, BatchPersonForm
 from django.shortcuts import get_object_or_404, render, resolve_url as r
 from django.urls import reverse_lazy
 from django.contrib import messages
 from jwcm.core.models import Congregation, Profile, Person, Speech, PublicAssignment
 from django.contrib.messages.views import SuccessMessageMixin
+import pandas as pd
 
 
 class Home(TemplateView):
@@ -19,7 +20,43 @@ class About(TemplateView):
     template_name = 'about.html'
 
 
-#******************** SUPERUSER FUNCTIONS ********************#
+#******************** BATCH CREATE ********************#
+def person_batch_create(request):
+    template_name = 'core/batch_person.html'
+    batch_form = BatchPersonForm(request.POST or None, request.FILES or None)
+
+    if request.method == 'GET':
+        context = {
+            'button': 'Carregar',
+            'title': 'Cadastrar publicadores em lote',
+            'form': batch_form}
+
+        return render(request, template_name, context)
+    else:
+        congregation = request.user.profile.congregation
+
+        try:
+            uploaded_file = request.FILES['file']
+
+            if uploaded_file.multiple_chunks():
+                messages.error(request, "O arquivo é muito grande (%.2f MB)." % (uploaded_file.size / (1000 * 1000),))
+                return HttpResponseRedirect(r('person-batch-create'))
+
+            if uploaded_file.name.endswith('.csv'):
+                df_batch = pd.read_csv(uploaded_file)
+            elif uploaded_file.name.endswith(('xls', 'xlsx', 'xlsm', 'xlsb', 'odf', 'ods', 'odt')):
+                df_batch = pd.read_excel(uploaded_file)
+            else:
+                messages.error(request, 'O formato do arquivo não é válido. Use um arquivo do tipo .csv, .xls ou .xlsx, por exemplo.')
+                return HttpResponseRedirect(r('person-batch-create'))
+
+            _batch_read_and_create_person(df_batch, congregation)
+            return HttpResponseRedirect(r('person-list'))
+
+        except Exception as e:
+                messages.error(request, "Não foi possível abrir o arquivo. " + repr(e))
+                return HttpResponseRedirect(r('person-list'))
+
 
 #******************** CREATE ********************#
 def user_register(request):
@@ -289,5 +326,58 @@ class SpeechDelete(SuccessMessageMixin, DeleteView):
             return HttpResponseRedirect(self.error_url)
 
 
+#******************** AUX FUNCTIONS ********************#
 def _format_date(date):
     return date.strftime("%d/%m/%Y")
+
+
+def _batch_read_and_create_person(df_batch, congregation):
+    list_person = []
+
+    for index, row in df_batch.iterrows():
+        full_name = row[0]
+        telephone = row[1]
+
+        if row[2].lower() == 'masculino':
+            gender = Person.MASCULINO
+        else:
+            gender = Person.FEMININO
+
+        if row[3].lower() in ('anciao', 'ancião'):
+            privilege = Person.ANCIAO
+        elif row[3].lower() in ('servo ministerial'):
+            privilege = Person.SERVO_MINISTERIAL
+        else:
+            privilege = Person.SEM_PRIVILEGIO_ESPECIAL
+
+        if row[4].lower() == 'pioneiro especial':
+            modality = Person.PIONEIRO_ESPECIAL
+        elif row[4].lower() == 'pioneiro regular':
+            modality = Person.PIONEIRO_REGULAR
+        elif row[4].lower() == 'pioneiro auxiliar':
+            modality = Person.PIONEIRO_AUXILIAR
+        else:
+            modality = Person.PUBLICADOR
+
+        if row[5].lower() == 'sim':
+            reader = True
+        else:
+            reader = False
+
+        if row[6].lower() == 'sim':
+            indicator_mic = True
+        else:
+            indicator_mic = False
+
+        if row[7].lower() == 'sim':
+            student_parts = True
+        else:
+            student_parts = False
+
+        person = Person(full_name=full_name, telephone=telephone, gender=gender, privilege=privilege, modality=modality,
+                        reader=reader, indicator_mic=indicator_mic, student_parts=student_parts,
+                        congregation=congregation)
+
+        list_person.append(person)
+
+    Person.objects.bulk_create(list_person)

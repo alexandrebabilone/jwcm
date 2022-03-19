@@ -1,5 +1,5 @@
 import datetime
-
+from django.db.models import Q
 from django import forms
 from django.core.exceptions import ValidationError
 from jwcm.core.models import Speech, Congregation, Person, PublicAssignment
@@ -69,4 +69,8 @@ class PublicAssignmentForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         self.request = kwargs.pop('request')
         super(PublicAssignmentForm, self).__init__(*args, **kwargs)
-        self.fields['speaker'].queryset = Person.objects.filter(congregation=self.request.user.profile.congregation)
+        self.fields['speaker'].queryset = Person.objects.filter(congregation=self.request.user.profile.congregation).filter(Q(privilege=Person.ANCIAO) | Q(privilege=Person.SERVO_MINISTERIAL))
+
+
+class BatchPersonForm(forms.Form):
+    file = forms.FileField(label='Arquivo')

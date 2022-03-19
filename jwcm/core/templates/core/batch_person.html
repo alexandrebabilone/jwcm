@@ -1,0 +1,58 @@
+{% extends "base.html" %}
+{% load crispy_forms_tags %}
+
+{% block title %}{{ title }}{% endblock %}
+
+{% block content%}
+<h3>{{ title }}</h3>
+<hr>
+    <p>Para cadastrar vários publicadores, carregue uma planilha (.csv, .xlsx, .xls, dentre outros formatos válidos) que siga o seguinte padrão:</p>
+    <div class="table responsive">
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>Nome</th>
+                <th>Telefone</th>
+                <th>Sexo</th>
+                <th>Privilegio</th>
+                <th>Ministério</th>
+                <th>Leitor</th>
+                <th>Indicador/microfone</th>
+                <th>Faz partes de estudante</th>
+            </tr>
+        </thead>
+
+        <tbody>
+            <tr>
+                <td>Roberto</td>
+                <td>27 3318 4455</td>
+                <td>Masculino</td>
+                <td>Servo Ministerial</td>
+                <td>Publicador</td>
+                <td>Não</td>
+                <td>Sim</td>
+                <td>Sim</td>
+            </tr>
+            <tr>
+                <td>Roberta</td>
+                <td>27 3318 4455</td>
+                <td>Feminino</td>
+                <td>Sem privilégio especial</td>
+                <td>Pioneiro regular</td>
+                <td>Não</td>
+                <td>Não</td>
+                <td>Sim</td>
+            </tr>
+        </tbody>
+    </table>
+</div>
+
+<form method="POST" id="form" enctype="multipart/form-data">
+    {% csrf_token %}
+    {{ form|crispy }}
+
+    <button type="submit" class="btn btn-success mt-3">
+        <i class="fas fa-check"></i> {{ button }}
+    </button>
+</form>
+{% endblock %}

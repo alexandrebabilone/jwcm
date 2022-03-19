@@ -16,7 +16,8 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path
 from jwcm.core.views import Home, About, user_register, public_assignment_create, ProfileUpdate, CongregationUpdate, PersonList, \
-    PersonCreate, PersonUpdate, PersonDelete, SpeechList, SpeechCreate, PublicAssignmentList, public_assignment_update, PublicAssignmentDelete, SpeechDelete, SpeechUpdate
+    PersonCreate, PersonUpdate, PersonDelete, SpeechList, SpeechCreate, PublicAssignmentList, public_assignment_update, PublicAssignmentDelete, SpeechDelete, SpeechUpdate, \
+    person_batch_create
 from django.contrib.auth import views as authview
 
 
@@ -35,6 +36,7 @@ urlpatterns = [
     path('person/create/', PersonCreate.as_view(), name='person-create'),
     path('person/update/<int:pk>/', PersonUpdate.as_view(), name='person-update'),
     path('person/delete/<int:pk>/', PersonDelete.as_view(), name='person-delete'),
+    path('person/create/batch/', person_batch_create, name='person-batch-create'),
 
     path('speech/', SpeechList.as_view(), name='speech-list'),
     path('speech/create/', SpeechCreate.as_view(), name='speech-create'),
