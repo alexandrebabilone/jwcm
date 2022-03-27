@@ -15,9 +15,11 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path
-from jwcm.core.views import Home, About, user_register, public_assignment_create, ProfileUpdate, CongregationUpdate, PersonList, \
-    PersonCreate, PersonUpdate, PersonDelete, SpeechList, SpeechCreate, PublicAssignmentList, public_assignment_update, PublicAssignmentDelete, SpeechDelete, SpeechUpdate, \
-    person_batch_create
+from jwcm.core.views import Home, About, user_register, public_assignment_create, ProfileUpdate, CongregationUpdate, \
+    PersonList, \
+    PersonCreate, PersonUpdate, PersonDelete, SpeechList, SpeechCreate, PublicAssignmentList, public_assignment_update, \
+    PublicAssignmentDelete, SpeechDelete, SpeechUpdate, \
+    person_batch_create, person_guest_create, congregation_guest_pop_up_create
 from django.contrib.auth import views as authview
 
 
@@ -48,6 +50,8 @@ urlpatterns = [
     path('public_assignment/update/<int:pk>/', public_assignment_update, name='public-assignment-update'),
     path('public_assignment/delete/<int:pk>/', PublicAssignmentDelete.as_view(), name='public-assignment-delete'),
 
+    path('person_guest/create/', person_guest_create, name ='person-guest-create'),
+    path('congregation_guest/create/', congregation_guest_pop_up_create, name ='congregation-guest-create'),
 
     path('admin/', admin.site.urls),
 ]

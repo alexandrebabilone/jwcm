@@ -74,3 +74,15 @@ class PublicAssignmentForm(forms.ModelForm):
 
 class BatchPersonForm(forms.Form):
     file = forms.FileField(label='Arquivo')
+
+
+class PersonGuestForm(forms.ModelForm):
+    class Meta:
+        model = Person
+        fields = ['full_name', 'telephone', 'congregation']
+
+
+class CongregationGuestPopUpForm(forms.ModelForm):
+    class Meta:
+        model = Congregation
+        fields = ['name']

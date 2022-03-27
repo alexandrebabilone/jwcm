@@ -61,7 +61,7 @@
 </main>
 
 <footer class="container">
-  {% include 'footer.html' only %}
+  {% include 'footer.html' with user=request.user only %}
 </footer>
 <script src="{% static 'js/bootstrap.js' %}"></script>
 <script src="{% static 'js/jquery-3.6.0.min.js' %}"></script>

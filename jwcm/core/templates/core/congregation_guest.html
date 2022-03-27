@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+{% load crispy_forms_tags %}
+
+{% block title %}{{ title }}{% endblock %}
+
+{% block content%}
+<h3>{{ title }}</h3>
+<hr>
+
+<form method="POST" id="form">
+    {% csrf_token %}
+    {{ form|crispy }}
+
+    <button type="submit" class="btn btn-success mt-3">
+        <i class="fas fa-check"></i> {{ button }}
+    </button>
+</form>
+{% endblock %}
+{% block scripts %}
+<style>
+    .navbar{
+         visibility: hidden;
+    }
+</style>
+{% endblock %}

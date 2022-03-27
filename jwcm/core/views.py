@@ -1,9 +1,9 @@
-from django.core.exceptions import ImproperlyConfigured
 from django.core.management.utils import get_random_secret_key
 from django.db.models.deletion import ProtectedError
 from django.views.generic import TemplateView, UpdateView, ListView, CreateView, DeleteView
-from django.http import HttpResponseRedirect
-from jwcm.core.forms import CongregationChoiceForm, UserForm, CongregationForm, PublicAssignmentForm, BatchPersonForm
+from django.http import HttpResponse, HttpResponseRedirect
+from jwcm.core.forms import CongregationChoiceForm, UserForm, CongregationForm, PublicAssignmentForm, BatchPersonForm, \
+    PersonGuestForm, CongregationGuestPopUpForm
 from django.shortcuts import get_object_or_404, render, resolve_url as r
 from django.urls import reverse_lazy
 from django.contrib import messages
@@ -18,8 +18,25 @@ class Home(TemplateView):
 
 class About(TemplateView):
     template_name = 'about.html'
+#******************** POP UP ********************#
+def person_guest_create(request):
+    form = PersonGuestForm(request.POST or None)
+
+    if form.is_valid():
+        instance = form.save()
+        return HttpResponseRedirect(r('person-list'))
+
+    return render(request, 'core/person_guest.html', {'form': form, 'title': 'Cadastrar orador visitante', 'button': 'Salvar'})
 
 
+def congregation_guest_pop_up_create(request):
+    form = CongregationGuestPopUpForm(request.POST or None)
+
+    if form.is_valid():
+        instance = form.save()
+        return HttpResponse('<script>opener.closePopup(window, "%s", "%s", "#id_congregation");</script>' % (instance.pk, instance))
+
+    return render(request, "core/congregation_guest.html", {'form': form, 'title': 'Cadastrar congregação do orador visitante', 'button': 'Salvar'})
 #******************** BATCH CREATE ********************#
 def person_batch_create(request):
     template_name = 'core/batch_person.html'
@@ -90,6 +107,7 @@ def user_register(request):
         else: #criar nova congregação
             if congregation_form.is_valid():
                 congregation_form.instance.random_key = get_random_secret_key()
+                congregation_form.instance.host = True
                 new_congregation = congregation_form.save()
                 user = user_form.save()
                 profile = Profile.objects.create(congregation=new_congregation, user=user)
@@ -207,7 +225,7 @@ class ProfileUpdate(SuccessMessageMixin, UpdateView):
 class CongregationUpdate(SuccessMessageMixin, UpdateView):
     template_name = 'core/form.html'
     model = Congregation
-    fields = ['name', 'number', 'midweek_meeting_time', 'weekend_meeting_time', 'midweek_meeting_day', 'weekend_meeting_day', 'random_key']
+    fields = ['name', 'number', 'midweek_meeting_time', 'weekend_meeting_time', 'midweek_meeting_day', 'weekend_meeting_day']
     success_url = reverse_lazy('home')
     success_message = "Congregação alterada com sucesso."
 

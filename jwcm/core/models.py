@@ -24,16 +24,17 @@ class Congregation(models.Model):
     )
 
     name = models.CharField(max_length=50, unique=True, verbose_name='Nome')
-    number = models.IntegerField(unique=True, verbose_name='Número')
+    number = models.IntegerField(unique=True, verbose_name='Número', null=True)
     midweek_meeting_time = models.TimeField(verbose_name='Horário da reunião de meio de semana',
-                                            default=time(19, 30, 00))
+                                            default=time(19, 30, 00), null=True)
     weekend_meeting_time = models.TimeField(verbose_name='Horário da reunião de fim de semana',
-                                            default=time(18, 00, 00))
+                                            default=time(18, 00, 00), null=True)
     midweek_meeting_day = models.IntegerField(choices=DAY_OF_WEEK, default=QUINTA,
-                                              verbose_name='Dia da reunião de meio de semana')
+                                              verbose_name='Dia da reunião de meio de semana', null=True)
     weekend_meeting_day = models.IntegerField(choices=DAY_OF_WEEK, default=DOMINGO,
-                                              verbose_name='Dia da reunião de fim de semana')
-    random_key = models.CharField(max_length=50, unique=True)
+                                              verbose_name='Dia da reunião de fim de semana', null=True)
+    host = models.BooleanField(default=False, verbose_name='Congregação Anfitriã')
+    random_key = models.CharField(max_length=50, unique=True, null=True)
 
     def __str__(self):
         return f'{self.name}'
