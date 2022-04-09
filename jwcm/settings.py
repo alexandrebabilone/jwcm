@@ -46,6 +46,8 @@ INSTALLED_APPS = [
     'crispy_bootstrap5',
     'django_extensions',
     'jwcm.core',
+    'jwcm.users',
+    'jwcm.public_speeches',
 ]
 
 CRISPY_ALLOWED_TEMPLATE_PACKS = 'bootstrap5'

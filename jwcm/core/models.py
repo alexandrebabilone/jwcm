@@ -1,6 +1,5 @@
 from django.db import models
 from datetime import time
-from django.contrib.auth.models import User
 from django.urls import reverse_lazy
 
 
@@ -42,24 +41,6 @@ class Congregation(models.Model):
     class Meta:
         verbose_name = 'congregação'
         verbose_name_plural = 'congregações'
-
-
-class Speech(models.Model):
-    number = models.IntegerField(unique=True, verbose_name='Número')
-    theme = models.CharField(max_length=80, verbose_name='Tema')
-
-    def __str__(self):
-        return f'{self.number} - {self.theme}'
-
-    class Meta:
-        verbose_name = 'discurso'
-        verbose_name_plural = 'discursos'
-
-    def get_update_url(self):
-        return reverse_lazy("speech-update", kwargs={"pk": self.id})
-
-    def get_delete_url(self):
-        return reverse_lazy("speech-delete", kwargs={"pk": self.id})
 
 
 class Person(models.Model):
@@ -119,35 +100,3 @@ class Person(models.Model):
     class Meta:
         verbose_name = 'pessoa'
         verbose_name_plural = 'pessoas'
-
-
-class Profile(models.Model):
-    telephone = models.CharField(max_length=16, verbose_name='Telefone', null=True)
-    congregation = models.ForeignKey(Congregation, on_delete=models.PROTECT, null=True)
-    user = models.OneToOneField(User, on_delete=models.PROTECT)
-
-    def __str__(self):
-        if (self.user is not None) and (self.congregation is not None):
-            return f'{self.user.first_name} ({self.congregation})'
-        else:
-            return f'{self.pk}º profile'
-
-    class Meta:
-        verbose_name = 'perfil'
-        verbose_name_plural = 'perfis'
-
-
-class PublicAssignment(models.Model):
-    congregation = models.ForeignKey(Congregation, on_delete=models.PROTECT)
-    speech = models.ForeignKey(Speech, on_delete=models.PROTECT, null=True, verbose_name='Discurso')
-    speaker = models.ForeignKey(Person, on_delete=models.PROTECT, null=True, verbose_name='Orador')
-    date = models.DateField(unique=True, verbose_name='Data')
-
-    def get_update_url(self):
-        return reverse_lazy('public-assignment-update', kwargs={"pk": self.id})
-
-    def get_delete_url(self):
-        return reverse_lazy("public-assignment-delete", kwargs={"pk": self.id})
-
-    def __str__(self):
-        return f'Designação do dia {self.date}, discurso {self.speech}'

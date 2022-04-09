@@ -14,24 +14,19 @@ Including another URLconf
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
 from django.contrib import admin
-from django.urls import path
-from jwcm.core.views import Home, About, user_register, public_assignment_create, ProfileUpdate, CongregationUpdate, \
-    PersonList, \
-    PersonCreate, PersonUpdate, PersonDelete, SpeechList, SpeechCreate, PublicAssignmentList, public_assignment_update, \
-    PublicAssignmentDelete, SpeechDelete, SpeechUpdate, \
-    person_batch_create, person_guest_create, congregation_guest_pop_up_create
-from django.contrib.auth import views as authview
+from django.urls import path, include
+from jwcm.core.views import Home, About, CongregationUpdate, PersonList, PersonCreate, PersonUpdate, PersonDelete, person_batch_create
+
 
 
 urlpatterns = [
+    path('public_speeches/', include('jwcm.public_speeches.urls')),
+    path('users/', include('jwcm.users.urls')),
+
     path('', Home.as_view(), name='home'),
     path('about/', About.as_view(), name='about'),
 
-    path('login/', authview.LoginView.as_view(template_name='core/login.html'), name='login'),
-    path('logout/', authview.LogoutView.as_view(), name='logout'),
-    path('register/', user_register, name='register'),
 
-    path('profile/<int:pk>/', ProfileUpdate.as_view(), name='profile'),
     path('congregation/<int:pk>/', CongregationUpdate.as_view(), name='congregation'),
 
     path('person/', PersonList.as_view(), name='person-list'),
@@ -39,19 +34,6 @@ urlpatterns = [
     path('person/update/<int:pk>/', PersonUpdate.as_view(), name='person-update'),
     path('person/delete/<int:pk>/', PersonDelete.as_view(), name='person-delete'),
     path('person/create/batch/', person_batch_create, name='person-batch-create'),
-
-    path('speech/', SpeechList.as_view(), name='speech-list'),
-    path('speech/create/', SpeechCreate.as_view(), name='speech-create'),
-    path('speech/update/<int:pk>/', SpeechUpdate.as_view(), name='speech-update'),
-    path('speech/delete/<int:pk>/', SpeechDelete.as_view(), name='speech-delete'),
-
-    path('public_assignment/', PublicAssignmentList.as_view(), name='public-assignment-list'),
-    path('public_assignment/create/', public_assignment_create, name='public-assignment-create'),
-    path('public_assignment/update/<int:pk>/', public_assignment_update, name='public-assignment-update'),
-    path('public_assignment/delete/<int:pk>/', PublicAssignmentDelete.as_view(), name='public-assignment-delete'),
-
-    path('person_guest/create/', person_guest_create, name ='person-guest-create'),
-    path('congregation_guest/create/', congregation_guest_pop_up_create, name ='congregation-guest-create'),
 
     path('admin/', admin.site.urls),
 ]

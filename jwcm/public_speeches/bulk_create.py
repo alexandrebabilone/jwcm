@@ -1,4 +1,4 @@
-from jwcm.core.models import Speech
+from jwcm.public_speeches.models import Speech
 
 #Localmente, fiz pelo manage shell
 #Preciso ver qual a melhor maneira de fazer isso em produção TODO
