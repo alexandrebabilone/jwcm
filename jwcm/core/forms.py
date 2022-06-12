@@ -1,12 +1,6 @@
 from django import forms
-from jwcm.core.models import Congregation, Person
+from jwcm.core.models import Congregation, AbstractMeeting
 
-
-
-class PersonForm(forms.ModelForm):
-    class Meta:
-        model = Person
-        fields = ['full_name', 'telephone', 'gender', 'privilege', 'modality']
 
 
 class CongregationForm(forms.ModelForm):
@@ -17,3 +11,9 @@ class CongregationForm(forms.ModelForm):
 
 class BatchPersonForm(forms.Form):
     file = forms.FileField(label='Arquivo')
+
+
+class IndicatorMicForm(forms.ModelForm):
+    class Meta:
+        model = AbstractMeeting
+        fields = ['indicator_1', 'indicator_2', 'mic_1', 'mic_2']

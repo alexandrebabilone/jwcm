@@ -4,7 +4,7 @@ from jwcm.core.forms import BatchPersonForm
 from django.shortcuts import get_object_or_404, render, resolve_url as r
 from django.urls import reverse_lazy
 from django.contrib import messages
-from jwcm.core.models import Congregation, Person
+from jwcm.core.models import Congregation, Person, AbstractMeeting
 from django.contrib.messages.views import SuccessMessageMixin
 import pandas as pd
 
@@ -75,13 +75,13 @@ class PersonCreate(SuccessMessageMixin, CreateView):
 class CongregationUpdate(SuccessMessageMixin, UpdateView):
     template_name = 'core/form.html'
     model = Congregation
-    fields = ['name', 'number', 'midweek_meeting_time', 'weekend_meeting_time', 'midweek_meeting_day', 'weekend_meeting_day']
+    fields = ['name', 'number', 'midweek_meeting_day', 'midweek_meeting_time', 'weekend_meeting_day', 'weekend_meeting_time']
     success_url = reverse_lazy('home')
     success_message = "Congregação alterada com sucesso."
 
     def get_context_data(self, *args, **kwargs):
         context = super().get_context_data(*args, **kwargs)
-        context['title'] = 'Atualizar Congregação'
+        context['title'] = 'Dados da Congregação'
         context['button'] = 'Salvar'
         return context
 
@@ -89,7 +89,8 @@ class CongregationUpdate(SuccessMessageMixin, UpdateView):
 class PersonUpdate(SuccessMessageMixin, UpdateView):
     model = Person
     template_name = 'core/form.html'
-    fields = ['full_name', 'telephone', 'gender', 'privilege', 'modality', 'reader', 'indicator_mic', 'student_parts']
+    fields = ['full_name', 'telephone', 'gender', 'student_parts', 'privilege', 'modality', 'watchtower_reader', 'bible_study_reader',
+              'indicator', 'mic', 'note_sound_table', 'zoom_indicator']
     success_url = reverse_lazy('person-list')
     success_message = "O registro de %(full_name)s foi alterado com sucesso."
 
@@ -98,6 +99,14 @@ class PersonUpdate(SuccessMessageMixin, UpdateView):
         context['title'] = 'Atualizar Publicador'
         context['button'] = 'Salvar'
         return context
+
+
+class IndicatorMicUpdate(SuccessMessageMixin, UpdateView):
+    template_name = 'core/form.html'
+    model = AbstractMeeting
+    fields = ['indicator_1', 'indicator_2', 'mic_1', 'mic_2']
+    #success_url = reverse_lazy('person-list')
+    #success_message = "%(full_name)s foi registrado com sucesso."
 #******************** LIST ********************#
 class PersonList(ListView):
     template_name = 'core/list_person.html'
@@ -106,6 +115,10 @@ class PersonList(ListView):
     def get_queryset(self):
         self.object_list = Person.objects.filter(congregation=self.request.user.profile.congregation)
         return self.object_list
+
+
+class IndicatorMicList(ListView):
+    pass
 #******************** DELETE ********************#
 class PersonDelete(SuccessMessageMixin, DeleteView):
     template_name = 'core/form_delete.html'
@@ -125,49 +138,83 @@ class PersonDelete(SuccessMessageMixin, DeleteView):
 
 def _batch_read_and_create_person(df_batch, congregation):
     list_person = []
+    true_options = 'sim', 's'
+    anciao_options = 'anciao', 'ancião', 'a'
+    sm_oprtions = 'servo ministerial', 'sm'
+    pe_options = 'pioneiro especial', 'pe'
+    pr_options = 'pioneiro regular', 'pr'
+    pa_options = 'pioneiro auxiliar', 'pa'
 
     for index, row in df_batch.iterrows():
         full_name = row[0]
         telephone = row[1]
 
-        if row[2].lower() == 'masculino':
+        if row[2].lower() in ('masculino', 'm'):
             gender = Person.MASCULINO
         else:
             gender = Person.FEMININO
 
-        if row[3].lower() in ('anciao', 'ancião'):
+        if row[3].lower() in anciao_options:
             privilege = Person.ANCIAO
-        elif row[3].lower() in ('servo ministerial'):
+        elif row[3].lower() in sm_oprtions:
             privilege = Person.SERVO_MINISTERIAL
         else:
             privilege = Person.SEM_PRIVILEGIO_ESPECIAL
 
-        if row[4].lower() == 'pioneiro especial':
+        if row[4].lower() in pe_options:
             modality = Person.PIONEIRO_ESPECIAL
-        elif row[4].lower() == 'pioneiro regular':
+        elif row[4].lower() in pr_options:
             modality = Person.PIONEIRO_REGULAR
-        elif row[4].lower() == 'pioneiro auxiliar':
+        elif row[4].lower() in pa_options:
             modality = Person.PIONEIRO_AUXILIAR
         else:
             modality = Person.PUBLICADOR
 
-        if row[5].lower() == 'sim':
-            reader = True
+        #leitor de A Sentinela
+        if row[5].lower() in true_options:
+            watchtower_reader = True
         else:
-            reader = False
+            watchtower_reader = False
 
-        if row[6].lower() == 'sim':
-            indicator_mic = True
+        # leitor de Estudo Bíblico
+        if row[6].lower() in true_options:
+            bible_study_reader = True
         else:
-            indicator_mic = False
+            bible_study_reader = False
 
-        if row[7].lower() == 'sim':
+        # indicador
+        if row[7].lower() in true_options:
+            indicator = True
+        else:
+            indicator = False
+
+        # mic
+        if row[8].lower() in true_options:
+            mic = True
+        else:
+            mic = False
+
+        # notebook/mesa de som
+        if row[9].lower() in true_options:
+            note_sound_table = True
+        else:
+            note_sound_table = False
+
+        # indicador zoom
+        if row[10].lower() in true_options:
+            zoom_indicator = True
+        else:
+            zoom_indicator = False
+
+        if row[9].lower() in true_options:
             student_parts = True
         else:
             student_parts = False
 
         person = Person(full_name=full_name, telephone=telephone, gender=gender, privilege=privilege, modality=modality,
-                        reader=reader, indicator_mic=indicator_mic, student_parts=student_parts,
+                        watchtower_reader=watchtower_reader, bible_study_reader=bible_study_reader,
+                        indicator=indicator, mic=mic, note_sound_table=note_sound_table, zoom_indicator=zoom_indicator,
+                        student_parts=student_parts,
                         congregation=congregation)
 
         list_person.append(person)

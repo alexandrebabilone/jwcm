@@ -13,7 +13,7 @@ from jwcm.public_speeches.forms import PublicAssignmentForm, CongregationGuestPo
 
 #******************** CREATE ********************#
 def public_assignment_create(request):
-    template_name = 'form.html'
+    template_name = 'public_speeches/form.html'
     public_assignment_form = PublicAssignmentForm(request.POST or None, request=request)
 
     if request.method == 'POST':
@@ -38,7 +38,7 @@ def public_assignment_create(request):
 
 class SpeechCreate(SuccessMessageMixin, CreateView):
     model = Speech
-    template_name = 'form.html'
+    template_name = 'public_speeches/form.html'
     fields = ['number', 'theme']
     success_url = reverse_lazy('speech-list')
     success_message = "O discurso número %(number)s foi registrado com sucesso."
@@ -51,7 +51,7 @@ class SpeechCreate(SuccessMessageMixin, CreateView):
         return context
 #******************** LIST ********************#
 class PublicAssignmentList(ListView):
-    template_name = 'list_public_assignment.html'
+    template_name = 'public_speeches/list_public_assignment.html'
     model = PublicAssignment
 
     def get_queryset(self):
@@ -60,12 +60,12 @@ class PublicAssignmentList(ListView):
 
 
 class SpeechList(ListView):
-    template_name = 'list_speech.html'
+    template_name = 'public_speeches/list_speech.html'
     model = Speech
 #******************** UPDATE ********************#
 class SpeechUpdate(SuccessMessageMixin, UpdateView):
     model = Speech
-    template_name = 'form.html'
+    template_name = 'public_speeches/form.html'
     fields = ['number', 'theme']
     success_url = reverse_lazy('speech-list')
     success_message = "O discurso %(number) foi alterado com sucesso."
@@ -79,7 +79,7 @@ class SpeechUpdate(SuccessMessageMixin, UpdateView):
 
 
 def public_assignment_update(request, pk):
-    template_name = 'form.html'
+    template_name = 'public_speeches/form.html'
     instance = get_object_or_404(PublicAssignment, pk=pk)
 
     if request.method == 'POST':
@@ -106,7 +106,7 @@ def public_assignment_update(request, pk):
         return render(request, template_name, context_data)
 #******************** DELETE ********************#
 class SpeechDelete(SuccessMessageMixin, DeleteView):
-    template_name = 'form_delete.html'
+    template_name = 'public_speeches/form_delete.html'
     model = Speech
     success_url = reverse_lazy('speech-list')
     error_url = success_url
@@ -130,7 +130,7 @@ class SpeechDelete(SuccessMessageMixin, DeleteView):
 
 
 class PublicAssignmentDelete(SuccessMessageMixin, DeleteView):
-    template_name = 'form_delete.html'
+    template_name = 'public_speeches/form_delete.html'
     model = PublicAssignment
     success_url = reverse_lazy('public-assignment-list')
 
@@ -151,7 +151,7 @@ def person_guest_create(request):
         instance = form.save()
         return HttpResponseRedirect(r('person-list'))
 
-    return render(request, 'person_guest.html', {'form': form, 'title': 'Cadastrar orador visitante', 'button': 'Salvar'})
+    return render(request, 'public_speeches/person_guest.html', {'form': form, 'title': 'Cadastrar orador visitante', 'button': 'Salvar'})
 
 
 def congregation_guest_pop_up_create(request):
@@ -161,7 +161,7 @@ def congregation_guest_pop_up_create(request):
         instance = form.save()
         return HttpResponse('<script>opener.closePopup(window, "%s", "%s", "#id_congregation");</script>' % (instance.pk, instance))
 
-    return render(request, "congregation_guest.html", {'form': form, 'title': 'Cadastrar congregação do orador visitante', 'button': 'Salvar'})
+    return render(request, "public_speeches/congregation_guest.html", {'form': form, 'title': 'Cadastrar congregação do orador visitante', 'button': 'Salvar'})
 
 
 #******************** AUX FUNCTIONS ********************#

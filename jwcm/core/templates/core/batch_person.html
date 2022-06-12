@@ -3,6 +3,10 @@
 
 {% block title %}{{ title }}{% endblock %}
 
+{% block menu_items %}
+    {% include 'core/menu_items.html' %}
+{% endblock %}
+
 {% block content%}
 <h3>{{ title }}</h3>
 <hr>
@@ -16,8 +20,10 @@
                 <th>Sexo</th>
                 <th>Privilegio</th>
                 <th>Ministério</th>
-                <th>Leitor</th>
-                <th>Indicador/microfone</th>
+                <th>Leitor de A Sentinela</th>
+                <th>Leitor do Estudo Bíblico</th>
+                <th>Indicador</th>
+                <th>Microfone</th>
                 <th>Faz partes de estudante</th>
             </tr>
         </thead>
@@ -32,6 +38,8 @@
                 <td>Não</td>
                 <td>Sim</td>
                 <td>Sim</td>
+                <td>Sim</td>
+                <td>Sim</td>
             </tr>
             <tr>
                 <td>Roberta</td>
@@ -40,7 +48,9 @@
                 <td>Sem privilégio especial</td>
                 <td>Pioneiro regular</td>
                 <td>Não</td>
+                <td>Sim</td>
                 <td>Não</td>
+                <td>Sim</td>
                 <td>Sim</td>
             </tr>
         </tbody>

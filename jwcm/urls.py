@@ -15,17 +15,17 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path, include
-from jwcm.core.views import Home, About, CongregationUpdate, PersonList, PersonCreate, PersonUpdate, PersonDelete, person_batch_create
+from jwcm.core.views import Home, About, CongregationUpdate, PersonList, PersonCreate, PersonUpdate, PersonDelete, person_batch_create, IndicatorMicUpdate
 
 
 
 urlpatterns = [
     path('public_speeches/', include('jwcm.public_speeches.urls')),
+    path('life_and_ministry/', include('jwcm.life_and_ministry.urls')),
     path('users/', include('jwcm.users.urls')),
 
     path('', Home.as_view(), name='home'),
     path('about/', About.as_view(), name='about'),
-
 
     path('congregation/<int:pk>/', CongregationUpdate.as_view(), name='congregation'),
 
@@ -34,6 +34,8 @@ urlpatterns = [
     path('person/update/<int:pk>/', PersonUpdate.as_view(), name='person-update'),
     path('person/delete/<int:pk>/', PersonDelete.as_view(), name='person-delete'),
     path('person/create/batch/', person_batch_create, name='person-batch-create'),
+
+    path('mechanical/', IndicatorMicUpdate.as_view(), name='indicator-mic-udpate'),
 
     path('admin/', admin.site.urls),
 ]

@@ -3,6 +3,10 @@
 
 {% block title %}{{ title }}{% endblock %}
 
+{% block menu_items %}
+    {% include 'core/menu_items.html' %}
+{% endblock %}
+
 {% block content%}
 <h3>{{ title }}</h3>
 <hr>

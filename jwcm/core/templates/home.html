@@ -3,11 +3,7 @@
 {% block title %}Gerenciador de Congregação{% endblock %}
 
 {% block content %}
-  {% include 'carousel.html' only %}
-
   <div class="container marketing">
-    {% include 'three_contents.html' only %}
-    {% include 'featurettes.html' only %}
+    {% include 'modules.html' with user=request.user only %}
   </div>
-
 {% endblock %}

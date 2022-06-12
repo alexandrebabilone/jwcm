@@ -1,59 +1,42 @@
 {% extends "base.html" %}
-{% block title %}Publicadores{% endblock %}
+{% block title %}Arranjo de Oradores{% endblock %}
 
 {% block menu_items %}
-    {% include 'core/menu_items.html' %}
+    {% include 'public_speeches/menu_items.html' %}
 {% endblock %}
 
 {% block content%}
-<h3>Publicadores da Congregação</h3>
+<h3>Arranjo de Oradores</h3>
 
 <hr>
-<a href="{% url 'person-create' %}" class="btn btn-primary">
+<a href="{% url 'public-assignment-create' %}" class="btn btn-primary">
     <i class="fas fa-plus"></i> Cadastrar
-</a>
-<a href="{% url 'person-batch-create' %}" class="btn btn-secondary">
-    <i class="fas fa-plus"></i> Cadastrar em lote
 </a>
 <br><br>
 
 
 <div class="table responsive">
-    <table class="table table-striped" id="table-person">
+    <table class="table table-striped" id="table-public-assignment">
         <thead>
             <tr>                
-                <th>Nome</th>
-                <th>Privilégio</th>                
-                <th>Modalidade</th>
-                <th>Partes de Estudante</th>
-                <th>Leitor - A Sentinela</th>
-                <th>Leitor - Estudo Bíblico</th>
-                <th>Indicador</th>
-                <th>Microfone</th>
-                <th>Notebook/Mesa de Som</th>
-                <th>Indicador Zoom</th>
+                <th>Data</th>
+                <th>Discurso</th>
+                <th>Orador</th>
                 <th>Opções</th>
             </tr>
         </thead>
 
         <tbody>
-            {% for person in object_list %}
+            {% for public_assignment in object_list %}
             <tr>                
-                <td> {{ person.full_name }} </td>
-                <td> {{ person.get_privilege_display }} </td>
-                <td> {{ person.get_modality_display }} </td>
-                <td> {{ person.student_parts|yesno:'Sim,Não' }} </td>
-                <td> {{ person.watchtower_reader|yesno:'Sim,Não' }} </td>
-                <td> {{ person.bible_study_reader|yesno:'Sim,Não' }} </td>
-                <td> {{ person.indicator|yesno:'Sim,Não' }} </td>
-                <td> {{ person.mic|yesno:'Sim,Não' }} </td>
-                <td> {{ person.note_sound_table|yesno:'Sim,Não' }} </td>
-                <td> {{ person.zoom_indicator|yesno:'Sim,Não' }} </td>
+                <td> {{ public_assignment.date }} </td>
+                <td> {{ public_assignment.speech.theme }} ({{ public_assignment.speech.number }}) </td>
+                <td> {{ public_assignment.speaker.full_name }} </td>
                 <td>
-                    <a href="{{person.get_update_url}}" class="btn btn-warning" title="Editar">
+                    <a href="{{public_assignment.get_update_url}}" class="btn btn-warning" title="Editar">
                         <i class="fas fa-pencil"></i>
                     </a>
-                    <a href="{{person.get_delete_url}}" class="btn btn-danger" title="Excluir">
+                    <a href="{{public_assignment.get_delete_url}}" class="btn btn-danger" title="Excluir">
                         <i class="fas fa-trash-can"></i>
                     </a>
                 </td>
@@ -68,14 +51,13 @@
 </div>
 {% endblock%}
 
-
 {% block scripts %}
 <script>
     $(document).ready(function () {
-        $('#table-person').DataTable({
+        $('#table-public-assignment').DataTable({
             responsive: true,
             // "bSort": false,
-            "aaSorting": [[0, "asc"]],
+            "aaSorting": [[0, "desc"]],
             "pageLength": 50,
             "language": {
                 "decimal": "",

@@ -15,10 +15,10 @@ class SpeechForm(forms.ModelForm):
 class PublicAssignmentForm(forms.ModelForm):
     class Meta:
         model = PublicAssignment
-        fields = ['date', 'speech', 'speaker']
+        fields = ['speech', 'speaker']
         widgets = {
             'date': DatePickerInput(format=('%Y-%m-%d'), attrs={}),
-        }
+        } #adicionar o campo data novamente?
 
 
     def __init__(self, *args, **kwargs):

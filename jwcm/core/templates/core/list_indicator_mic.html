@@ -1,38 +1,51 @@
 {% extends "base.html" %}
-{% block title %}Arranjo de Oradores{% endblock %}
+{% block title %}Publicadores{% endblock %}
+
+{% block menu_items %}
+    {% include 'core/menu_items.html' %}
+{% endblock %}
 
 {% block content%}
-<h3>Arranjo de Oradores</h3>
+<h3>Publicadores da Congregação</h3>
 
 <hr>
-<a href="{% url 'public-assignment-create' %}" class="btn btn-primary">
+<a href="{% url 'person-create' %}" class="btn btn-primary">
     <i class="fas fa-plus"></i> Cadastrar
+</a>
+<a href="{% url 'person-batch-create' %}" class="btn btn-secondary">
+    <i class="fas fa-plus"></i> Cadastrar em lote
 </a>
 <br><br>
 
 
 <div class="table responsive">
-    <table class="table table-striped" id="table-public-assignment">
+    <table class="table table-striped" id="table-person">
         <thead>
             <tr>                
-                <th>Data</th>
-                <th>Discurso</th>
-                <th>Orador</th>
+                <th>Nome</th>
+                <th>Privilégio</th>                
+                <th>Modalidade</th>
+                <th>Partes de Estudante</th>
+                <th>Leitor</th>
+                <th>Indicador/Microfone</th>
                 <th>Opções</th>
             </tr>
         </thead>
 
         <tbody>
-            {% for public_assignment in object_list %}
+            {% for person in object_list %}
             <tr>                
-                <td> {{ public_assignment.date }} </td>
-                <td> {{ public_assignment.speech.theme }} ({{ public_assignment.speech.number }}) </td>
-                <td> {{ public_assignment.speaker.full_name }} </td>
+                <td> {{ person.full_name }} </td>
+                <td> {{ person.get_privilege_display }} </td>
+                <td> {{ person.get_modality_display }} </td>
+                <td> {{ person.student_parts|yesno:'Sim,Não' }} </td>
+                <td> {{ person.reader|yesno:'Sim,Não' }} </td>
+                <td> {{ person.indicator_mic|yesno:'Sim,Não' }} </td>
                 <td>
-                    <a href="{{public_assignment.get_update_url}}" class="btn btn-warning" title="Editar">
+                    <a href="{{person.get_update_url}}" class="btn btn-warning" title="Editar">
                         <i class="fas fa-pencil"></i>
                     </a>
-                    <a href="{{public_assignment.get_delete_url}}" class="btn btn-danger" title="Excluir">
+                    <a href="{{person.get_delete_url}}" class="btn btn-danger" title="Excluir">
                         <i class="fas fa-trash-can"></i>
                     </a>
                 </td>
@@ -47,13 +60,14 @@
 </div>
 {% endblock%}
 
+
 {% block scripts %}
 <script>
     $(document).ready(function () {
-        $('#table-public-assignment').DataTable({
+        $('#table-person').DataTable({
             responsive: true,
             // "bSort": false,
-            "aaSorting": [[0, "desc"]],
+            "aaSorting": [[0, "asc"]],
             "pageLength": 50,
             "language": {
                 "decimal": "",

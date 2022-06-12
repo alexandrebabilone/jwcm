@@ -1,6 +1,6 @@
 from django.db import models
 from django.urls import reverse_lazy
-from jwcm.core.models import Congregation, Person
+from jwcm.core.models import Congregation, Person, AbstractMeeting
 
 
 class Speech(models.Model):
@@ -25,7 +25,6 @@ class PublicAssignment(models.Model):
     congregation = models.ForeignKey(Congregation, on_delete=models.PROTECT)
     speech = models.ForeignKey(Speech, on_delete=models.PROTECT, null=True, verbose_name='Discurso')
     speaker = models.ForeignKey(Person, on_delete=models.PROTECT, null=True, verbose_name='Orador')
-    date = models.DateField(unique=True, verbose_name='Data')
 
     def get_update_url(self):
         return reverse_lazy('public-assignment-update', kwargs={"pk": self.id})
@@ -35,3 +34,9 @@ class PublicAssignment(models.Model):
 
     def __str__(self):
         return f'Designação do dia {self.date}, discurso {self.speech}'
+
+
+class WeekendMeeting(AbstractMeeting):
+    ruling_watchtower = models.ForeignKey(Person, on_delete=models.PROTECT, null=True, related_name='ruling_watchtower')
+    reader_watchtower = models.ForeignKey(Person, on_delete=models.PROTECT, null=True, related_name='reader_watchtower')
+    public_speech = models.ForeignKey(PublicAssignment, on_delete=models.PROTECT, null=True)

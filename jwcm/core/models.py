@@ -82,8 +82,12 @@ class Person(models.Model):
     gender = models.IntegerField(choices=GENDER, default=MASCULINO, verbose_name='Sexo')
     privilege = models.IntegerField(choices=PRIVILEGE, default=SEM_PRIVILEGIO_ESPECIAL, verbose_name='Privilégio especial')
     modality = models.IntegerField(choices=MODALITY, default=PUBLICADOR, verbose_name='Ministério')
-    reader = models.BooleanField(default=False, verbose_name='Leitor')
-    indicator_mic = models.BooleanField(default=False, verbose_name='Indicador/Microfone')
+    watchtower_reader = models.BooleanField(default=False, verbose_name='Leitor de A Sentinela')
+    bible_study_reader = models.BooleanField(default=False, verbose_name='Leitor de Estudo Bíblico')
+    indicator = models.BooleanField(default=False, verbose_name='Indicador')
+    mic = models.BooleanField(default=False, verbose_name='Microfone')
+    note_sound_table = models.BooleanField(default=False, verbose_name='Notebook/Mesa de Som')
+    zoom_indicator = models.BooleanField(default=False, verbose_name='Indicador Zoom')
     student_parts = models.BooleanField(default=True, verbose_name='Partes de Estudante')
 
     congregation = models.ForeignKey(Congregation, on_delete=models.PROTECT, null=True)
@@ -100,3 +104,18 @@ class Person(models.Model):
     class Meta:
         verbose_name = 'pessoa'
         verbose_name_plural = 'pessoas'
+
+
+class AbstractMeeting(models.Model):
+    date = models.DateField(unique=True, verbose_name='Data')
+    president = models.ForeignKey(Person, on_delete=models.PROTECT, null=True)
+    indicator_1 = models.ForeignKey(Person, on_delete=models.PROTECT, null=True, related_name='+')
+    indicator_2 = models.ForeignKey(Person, on_delete=models.PROTECT, null=True, related_name='+')
+    mic_1 = models.ForeignKey(Person, on_delete=models.PROTECT, null=True, related_name='+')
+    mic_2 = models.ForeignKey(Person, on_delete=models.PROTECT, null=True, related_name='+')
+    note_sound_table = models.ForeignKey(Person, on_delete=models.PROTECT, null=True, related_name='+')
+    zoom_indicator = models.ForeignKey(Person, on_delete=models.PROTECT, null=True, related_name='+')
+    congregation = models.ForeignKey(Congregation, on_delete=models.PROTECT)
+
+    class Meta:
+        abstract = True
