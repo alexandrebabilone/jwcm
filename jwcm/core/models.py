@@ -4,13 +4,13 @@ from django.urls import reverse_lazy
 
 
 class Congregation(models.Model):
-    DOMINGO = 0
-    SEGUNDA = 1
-    TERCA = 2
-    QUARTA = 3
-    QUINTA = 4
-    SEXTA = 5
-    SABADO = 6
+    SEGUNDA = 0
+    TERCA = 1
+    QUARTA = 2
+    QUINTA = 3
+    SEXTA = 4
+    SABADO = 5
+    DOMINGO = 6
 
     DAY_OF_WEEK = (
         (DOMINGO, 'Domingo'),
@@ -107,7 +107,7 @@ class Person(models.Model):
 
 
 class AbstractMeeting(models.Model):
-    date = models.DateField(unique=True, verbose_name='Data')
+    date = models.DateField(verbose_name='Data')
     president = models.ForeignKey(Person, on_delete=models.PROTECT, null=True)
     indicator_1 = models.ForeignKey(Person, on_delete=models.PROTECT, null=True, related_name='+')
     indicator_2 = models.ForeignKey(Person, on_delete=models.PROTECT, null=True, related_name='+')

@@ -40,3 +40,6 @@ class WeekendMeeting(AbstractMeeting):
     ruling_watchtower = models.ForeignKey(Person, on_delete=models.PROTECT, null=True, related_name='ruling_watchtower')
     reader_watchtower = models.ForeignKey(Person, on_delete=models.PROTECT, null=True, related_name='reader_watchtower')
     public_speech = models.ForeignKey(PublicAssignment, on_delete=models.PROTECT, null=True)
+
+    def __str__(self):
+        return f'Reunião de fim de semana - {self.date}'

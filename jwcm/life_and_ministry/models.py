@@ -11,6 +11,9 @@ class Part(models.Model):
 class MidweekMeeting(AbstractMeeting):
     parts = models.ManyToManyField(Part, verbose_name='midweek_meeting')
 
+    def __str__(self):
+        return f'Reunião de meio de semana - {self.date}'
+
     #TESOUROS DA PALAVRA DE DEUS
     #discurso 10min
     #joias espirituais

@@ -1,16 +1,29 @@
 from django.views.generic import TemplateView, UpdateView, ListView, CreateView, DeleteView
 from django.http import HttpResponse, HttpResponseRedirect
-from jwcm.core.forms import BatchPersonForm
+from jwcm.core.forms import BatchPersonForm, HomeForm
 from django.shortcuts import get_object_or_404, render, resolve_url as r
 from django.urls import reverse_lazy
 from django.contrib import messages
 from jwcm.core.models import Congregation, Person, AbstractMeeting
 from django.contrib.messages.views import SuccessMessageMixin
 import pandas as pd
+import datetime
+from jwcm.life_and_ministry.models import MidweekMeeting
+from jwcm.public_speeches.models import WeekendMeeting
+
+
+def home(request):
+    template_name = 'home.html'
+    home_form = HomeForm(request.POST or None)
+
+    _verify_meetings(request.user.profile.congregation)
+
+    return render(request, template_name, {'form': home_form})
 
 
 class Home(TemplateView):
     template_name = 'home.html'
+    #_verify_meetings('user_congregation')
 
 
 class About(TemplateView):
@@ -220,3 +233,42 @@ def _batch_read_and_create_person(df_batch, congregation):
         list_person.append(person)
 
     Person.objects.bulk_create(list_person)
+
+
+def _verify_meetings(user_congregation):
+    """
+     O objetivo dessa função é garantir que sempre haja reuniões criadas para as próximas 25 semanas
+    """
+    _verify_meeting(MidweekMeeting, user_congregation.midweek_meeting_day, user_congregation)
+    _verify_meeting(WeekendMeeting, user_congregation.weekend_meeting_day, user_congregation)
+
+
+def _verify_meeting(ClassMeeting, weekday_of_meeting, user_congregation):
+    list_meetings = []
+
+    current_date = datetime.date.today()
+    current_month = current_date.month
+    current_year = current_date.year
+
+    objects_meetings = ClassMeeting.objects.filter(congregation=user_congregation).order_by('-date')
+
+    # se não existe nenhuma reunião cadastrada, criar para as próximas 25 semanas meses a partir do mês corrente
+    if not objects_meetings:
+        date = datetime.date(current_year, current_month, 1)
+        while date.weekday() != weekday_of_meeting:
+            date = date + datetime.timedelta(days=1)
+
+        for _ in range(25):
+            meeting = ClassMeeting(date=date, congregation=user_congregation)
+            list_meetings.append(meeting)
+            date = date + datetime.timedelta(days=7)
+    # existem reuniões cadastradas, mas não tem mais 5 meses de reunião criados à frente -> então cria mais 5 semanas de reunião
+    elif (objects_meetings[0].date - current_date).days < 150:
+        date_last_meeting = objects_meetings[0].date
+
+        for _ in range(5):
+            date_last_meeting = date_last_meeting + datetime.timedelta(days=7)
+            meeting = ClassMeeting(date=date_last_meeting, congregation=user_congregation)
+            list_meetings.append(meeting)
+
+    ClassMeeting.objects.bulk_create(list_meetings)
