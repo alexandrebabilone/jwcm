@@ -88,6 +88,8 @@ class Person(models.Model):
     mic = models.BooleanField(default=False, verbose_name='Microfone')
     note_sound_table = models.BooleanField(default=False, verbose_name='Notebook/Mesa de Som')
     zoom_indicator = models.BooleanField(default=False, verbose_name='Indicador Zoom')
+    weekend_meeting_president = models.BooleanField(default=False, verbose_name='Presidente - Reunião de fim de semana')
+    midweek_meeting_president = models.BooleanField(default=False, verbose_name='Presidente - Reunião de meio de semana')
     student_parts = models.BooleanField(default=True, verbose_name='Partes de Estudante')
 
     congregation = models.ForeignKey(Congregation, on_delete=models.PROTECT, null=True)

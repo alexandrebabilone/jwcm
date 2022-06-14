@@ -15,7 +15,7 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path, include
-from jwcm.core.views import Home, About, CongregationUpdate, PersonList, PersonCreate, PersonUpdate, PersonDelete, person_batch_create, IndicatorMicUpdate, home
+from jwcm.core.views import About, CongregationUpdate, PersonList, PersonCreate, PersonUpdate, PersonDelete, person_batch_create, IndicatorMicUpdate, home
 
 
 

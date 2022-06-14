@@ -21,11 +21,6 @@ def home(request):
     return render(request, template_name, {'form': home_form})
 
 
-class Home(TemplateView):
-    template_name = 'home.html'
-    #_verify_meetings('user_congregation')
-
-
 class About(TemplateView):
     template_name = 'about.html'
 
@@ -69,7 +64,9 @@ def person_batch_create(request):
 class PersonCreate(SuccessMessageMixin, CreateView):
     model = Person
     template_name = 'core/form.html'
-    fields = ['full_name', 'telephone', 'gender', 'privilege', 'modality', 'reader', 'indicator_mic', 'student_parts']
+    fields = ['full_name', 'telephone', 'gender', 'student_parts', 'privilege', 'modality', 'watchtower_reader',
+              'bible_study_reader', 'weekend_meeting_president', 'midweek_meeting_president',
+              'indicator', 'mic', 'note_sound_table', 'zoom_indicator']
     success_url = reverse_lazy('person-list')
     success_message = "%(full_name)s foi registrado com sucesso."
 
@@ -102,7 +99,8 @@ class CongregationUpdate(SuccessMessageMixin, UpdateView):
 class PersonUpdate(SuccessMessageMixin, UpdateView):
     model = Person
     template_name = 'core/form.html'
-    fields = ['full_name', 'telephone', 'gender', 'student_parts', 'privilege', 'modality', 'watchtower_reader', 'bible_study_reader',
+    fields = ['full_name', 'telephone', 'gender', 'student_parts', 'privilege', 'modality', 'watchtower_reader',
+              'bible_study_reader', 'weekend_meeting_president', 'midweek_meeting_president',
               'indicator', 'mic', 'note_sound_table', 'zoom_indicator']
     success_url = reverse_lazy('person-list')
     success_message = "O registro de %(full_name)s foi alterado com sucesso."
@@ -219,14 +217,28 @@ def _batch_read_and_create_person(df_batch, congregation):
         else:
             zoom_indicator = False
 
-        if row[9].lower() in true_options:
+        # partes de estudante
+        if row[11].lower() in true_options:
             student_parts = True
         else:
             student_parts = False
 
+        # presidente da reunião de fim de semana
+        if row[12].lower() in true_options:
+            weekend_meeting_president = True
+        else:
+            weekend_meeting_president = False
+
+        # presidente da reunião de meio de semana
+        if row[13].lower() in true_options:
+            midweek_meeting_president = True
+        else:
+            midweek_meeting_president = False
+
         person = Person(full_name=full_name, telephone=telephone, gender=gender, privilege=privilege, modality=modality,
                         watchtower_reader=watchtower_reader, bible_study_reader=bible_study_reader,
                         indicator=indicator, mic=mic, note_sound_table=note_sound_table, zoom_indicator=zoom_indicator,
+                        weekend_meeting_president=weekend_meeting_president, midweek_meeting_president=midweek_meeting_president,
                         student_parts=student_parts,
                         congregation=congregation)
 
