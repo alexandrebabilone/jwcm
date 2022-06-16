@@ -129,8 +129,6 @@ def mechanical_privileges(request):
     user_congregation = request.user.profile.congregation
     template_name = 'core/mechanical_privileges.html'
 
-    AbstractMeeting.objects
-
     mics = Person.objects.mics_per_congregation(user_congregation)
     indicators = Person.objects.indicators_per_congregation(user_congregation)
     note_sound_tables = Person.objects.note_sound_tables_per_congregation(user_congregation)
