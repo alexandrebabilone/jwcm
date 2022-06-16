@@ -4,12 +4,10 @@ from jwcm.core.forms import BatchPersonForm
 from django.shortcuts import get_object_or_404, render, resolve_url as r
 from django.urls import reverse_lazy
 from django.contrib import messages
-from jwcm.core.models import Congregation, Person, AbstractMeeting
+from jwcm.core.models import Congregation, Person, Meeting
 from django.contrib.messages.views import SuccessMessageMixin
 import pandas as pd
 import datetime
-from jwcm.life_and_ministry.models import MidweekMeeting
-from jwcm.public_speeches.models import WeekendMeeting
 
 
 def home(request):
@@ -263,36 +261,49 @@ def _verify_meetings(user_congregation):
     """
      O objetivo dessa função é garantir que sempre haja reuniões criadas para as próximas 25 semanas
     """
-    _verify_meeting(MidweekMeeting, user_congregation.midweek_meeting_day, user_congregation)
-    _verify_meeting(WeekendMeeting, user_congregation.weekend_meeting_day, user_congregation)
-
-
-def _verify_meeting(ClassMeeting, weekday_of_meeting, user_congregation):
     list_meetings = []
 
     current_date = datetime.date.today()
     current_month = current_date.month
     current_year = current_date.year
 
-    objects_meetings = ClassMeeting.objects.filter(congregation=user_congregation).order_by('-date')
+    midweek_day = user_congregation.midweek_meeting_day
+    weekend_day = user_congregation.weekend_meeting_day
+
+    _delta_mid_to_weekend = weekend_day - midweek_day
+    _delta_weekend_to_mid = (6 - weekend_day) + (midweek_day + 1)
+
+    objects_meetings = Meeting.objects.filter(congregation=user_congregation).order_by('-date')
 
     # se não existe nenhuma reunião cadastrada, criar para as próximas 25 semanas meses a partir do mês corrente
     if not objects_meetings:
         date = datetime.date(current_year, current_month, 1)
-        while date.weekday() != weekday_of_meeting:
+        while date.weekday() != midweek_day:
             date = date + datetime.timedelta(days=1)
 
         for _ in range(25):
-            meeting = ClassMeeting(date=date, congregation=user_congregation)
-            list_meetings.append(meeting)
-            date = date + datetime.timedelta(days=7)
+            midweek_meeting = Meeting(date=date, congregation=user_congregation, type=Meeting.MIDWEEK)
+            list_meetings.append(midweek_meeting)
+
+            date = date + datetime.timedelta(days=_delta_mid_to_weekend)
+            weekend_meeting = Meeting(date=date, congregation=user_congregation, type=Meeting.WEEKEND)
+            list_meetings.append(weekend_meeting)
+
+            date = date + datetime.timedelta(days=_delta_weekend_to_mid)
     # existem reuniões cadastradas, mas não tem mais 5 meses de reunião criados à frente -> então cria mais 5 semanas de reunião
     elif (objects_meetings[0].date - current_date).days < 150:
-        date_last_meeting = objects_meetings[0].date
+        last_meeting = objects_meetings[0]
+        date_last_meeting = last_meeting.date
+        # a ultima reunião sempre será a de fim de semana
 
         for _ in range(5):
-            date_last_meeting = date_last_meeting + datetime.timedelta(days=7)
-            meeting = ClassMeeting(date=date_last_meeting, congregation=user_congregation)
-            list_meetings.append(meeting)
+            date_last_meeting = date_last_meeting + datetime.timedelta(days=_delta_weekend_to_mid)
+            midweek_meeting = Meeting(date=date_last_meeting, congregation=user_congregation, type=Meeting.MIDWEEK)
+            list_meetings.append(midweek_meeting)
 
-    ClassMeeting.objects.bulk_create(list_meetings)
+            date_last_meeting = date_last_meeting + datetime.timedelta(days=_delta_mid_to_weekend)
+            weekend_meeting = Meeting(date=date_last_meeting, congregation=user_congregation, type=Meeting.WEEKEND)
+            list_meetings.append(weekend_meeting)
+
+    Meeting.objects.bulk_create(list_meetings)
+

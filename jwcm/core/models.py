@@ -2,6 +2,7 @@ from django.db import models
 from datetime import time
 from django.urls import reverse_lazy
 from jwcm.core.managers import PersonQuerySet
+from jwcm.public_speeches.models import Speech
 
 
 class Congregation(models.Model):
@@ -111,7 +112,50 @@ class Person(models.Model):
         verbose_name_plural = 'pessoas'
 
 
-class AbstractMeeting(models.Model):
+class Part(models.Model):
+    #time? lesson?
+    theme = models.CharField(verbose_name='Tema', max_length=100)
+    owner = models.ForeignKey(Person, verbose_name='Dono da parte', on_delete=models.PROTECT, null=True, related_name='owner')
+    helper = models.ForeignKey(Person, verbose_name='Ajudante', on_delete=models.PROTECT, null=True, related_name='helper')
+
+    #TESOUROS DA PALAVRA DE DEUS
+    #discurso 10min
+    #joias espirituais
+    #leitura da biblia
+
+    #FAÇA SEU MELHOR NO MINISTÉRIO
+    #1 a 4 partes nessa seção
+
+    #NOSSA VIDA CRISTÃ
+    #1 a 3 partes
+    #estudo biblico
+
+
+class PublicAssignment(models.Model):
+    congregation = models.ForeignKey(Congregation, on_delete=models.PROTECT)
+    speech = models.ForeignKey(Speech, on_delete=models.PROTECT, null=True, verbose_name='Discurso')
+    speaker = models.ForeignKey(Person, on_delete=models.PROTECT, null=True, verbose_name='Orador')
+
+    def get_update_url(self):
+        return reverse_lazy('public-assignment-update', kwargs={"pk": self.id})
+
+    def get_delete_url(self):
+        return reverse_lazy("public-assignment-delete", kwargs={"pk": self.id})
+
+    def __str__(self):
+        return f'Designação do dia {self.date}, discurso {self.speech}'
+
+
+class Meeting(models.Model):
+    MIDWEEK = 0
+    WEEKEND = 1
+
+    MEETING_TYPE = (
+        (MIDWEEK, 'Meio de semana'),
+        (WEEKEND, 'Fim de semana'),
+    )
+
+    type = models.IntegerField(choices=MEETING_TYPE, default=MIDWEEK, verbose_name='Tipo de Reunião')
     date = models.DateField(verbose_name='Data')
     president = models.ForeignKey(Person, on_delete=models.PROTECT, null=True)
     indicator_1 = models.ForeignKey(Person, on_delete=models.PROTECT, null=True, related_name='+')
@@ -122,5 +166,18 @@ class AbstractMeeting(models.Model):
     zoom_indicator = models.ForeignKey(Person, on_delete=models.PROTECT, null=True, related_name='+')
     congregation = models.ForeignKey(Congregation, on_delete=models.PROTECT)
 
+    # atributos específicos de reunião de meio de semana
+    parts = models.ForeignKey(Part, verbose_name='midweek_meeting', null=True, on_delete=models.PROTECT)
+
+    # atributos específicos de reunião de fim de semana
+    ruling_watchtower = models.ForeignKey(Person, on_delete=models.PROTECT, null=True, related_name='+')
+    reader_watchtower = models.ForeignKey(Person, on_delete=models.PROTECT, null=True, related_name='+')
+    public_speech = models.ForeignKey(PublicAssignment, on_delete=models.PROTECT, null=True)
+
+
+    def __str__(self):
+        return f'[{self.date}] - Reunião de {self.MEETING_TYPE[self.type][1]}'
+
     class Meta:
-        abstract = True
+        verbose_name = 'reunião'
+        verbose_name_plural = 'reuniões'

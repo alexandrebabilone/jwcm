@@ -1,8 +1,8 @@
 from django.db.models import Q
 from django import forms
-from jwcm.core.models import Person, Congregation
+from jwcm.core.models import Person, Congregation, PublicAssignment
 from jwcm.core.widget import DatePickerInput
-from jwcm.public_speeches.models import Speech, PublicAssignment
+from jwcm.public_speeches.models import Speech
 
 
 

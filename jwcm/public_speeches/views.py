@@ -6,7 +6,9 @@ from django.shortcuts import render
 from django.urls import reverse_lazy
 from django.contrib.messages.views import SuccessMessageMixin
 from django.db.models.deletion import ProtectedError
-from jwcm.public_speeches.models import Speech, PublicAssignment
+
+from jwcm.core.models import PublicAssignment
+from jwcm.public_speeches.models import Speech
 from jwcm.public_speeches.forms import PublicAssignmentForm, CongregationGuestPopUpForm, PersonGuestForm
 
 
