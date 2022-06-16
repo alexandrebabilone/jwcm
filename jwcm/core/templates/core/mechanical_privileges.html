@@ -1,0 +1,58 @@
+{% extends "base.html" %}
+{% block title %}Privilégios mecânicos{% endblock %}
+
+{% block menu_items %}
+    {% include 'core/menu_items.html' %}
+{% endblock %}
+
+{% block content%}
+<h3>Privilégios mecânicos</h3>
+<hr>
+
+<h4>Microfones</h4>
+{% for mic in mics %}
+{{ mic.full_name }}<br>
+{% empty %}
+<p>Ainda não existem irmãos para trabalhar como microfones.</p>
+{% endfor %}
+
+
+{% endblock%}
+
+
+{% block scripts %}
+<script>
+    $(document).ready(function () {
+        $('#table-person').DataTable({
+            responsive: true,
+            // "bSort": false,
+            "aaSorting": [[0, "asc"]],
+            "pageLength": 50,
+            "language": {
+                "decimal": "",
+                "emptyTable": "Sem dados disponíveis",
+                "info": "Mostrando de _START_ até _END_ de _TOTAL_ registros",
+                "infoEmpty": "Mostrando de 0 até 0 de 0 registros",
+                "infoFiltered": "(filtrado de _MAX_ registos no total)",
+                "infoPostFix": "",
+                "thousands": ",",
+                "lengthMenu": "Mostrar _MENU_ registros",
+                "loadingRecords": "A carregar dados...",
+                "processing": "A processar...",
+                "search": "Procurar:",
+                "zeroRecords": "Não foram encontrados resultados",
+                "paginate": {
+                    "first": "Primeiro",
+                    "last": "Último",
+                    "next": "Seguinte",
+                    "previous": "Anterior"
+                },
+                "aria": {
+                    "sortAscending": ": ordem crescente",
+                    "sortDescending": ": ordem decrescente"
+                }
+            }
+        });
+    });
+</script>
+{% endblock %}

@@ -1,6 +1,6 @@
 from django.views.generic import TemplateView, UpdateView, ListView, CreateView, DeleteView
 from django.http import HttpResponse, HttpResponseRedirect
-from jwcm.core.forms import BatchPersonForm, HomeForm
+from jwcm.core.forms import BatchPersonForm
 from django.shortcuts import get_object_or_404, render, resolve_url as r
 from django.urls import reverse_lazy
 from django.contrib import messages
@@ -14,16 +14,13 @@ from jwcm.public_speeches.models import WeekendMeeting
 
 def home(request):
     template_name = 'home.html'
-    home_form = HomeForm(request.POST or None)
-
     _verify_meetings(request.user.profile.congregation)
 
-    return render(request, template_name, {'form': home_form})
+    return render(request, template_name)
 
 
 class About(TemplateView):
     template_name = 'about.html'
-
 #******************** BATCH CREATE ********************#
 def person_batch_create(request):
     template_name = 'core/batch_person.html'
@@ -110,14 +107,6 @@ class PersonUpdate(SuccessMessageMixin, UpdateView):
         context['title'] = 'Atualizar Publicador'
         context['button'] = 'Salvar'
         return context
-
-
-class IndicatorMicUpdate(SuccessMessageMixin, UpdateView):
-    template_name = 'core/form.html'
-    model = AbstractMeeting
-    fields = ['indicator_1', 'indicator_2', 'mic_1', 'mic_2']
-    #success_url = reverse_lazy('person-list')
-    #success_message = "%(full_name)s foi registrado com sucesso."
 #******************** LIST ********************#
 class PersonList(ListView):
     template_name = 'core/list_person.html'
@@ -128,8 +117,33 @@ class PersonList(ListView):
         return self.object_list
 
 
-class IndicatorMicList(ListView):
-    pass
+def mechanical_privileges(request):
+    """
+    Como será essa tela:
+    Criar uma tabela contendo 2 meses para cada privilégio
+    Privilégios: microfone, indicador, notebook/mesa de som, indicador Zoom,
+    """
+    #mechanical_privileges_form = HomeForm(request.POST or None)
+    # , {'form': mechanical_privileges_form}
+
+    user_congregation = request.user.profile.congregation
+    template_name = 'core/mechanical_privileges.html'
+
+    AbstractMeeting.objects
+
+    mics = Person.objects.mics_per_congregation(user_congregation)
+    indicators = Person.objects.indicators_per_congregation(user_congregation)
+    note_sound_tables = Person.objects.note_sound_tables_per_congregation(user_congregation)
+    zoom_indicators = Person.objects.zoom_indicators_per_congregation(user_congregation)
+
+    context = {
+        'mics': mics,
+        'indicators': indicators,
+        'note_sound_tables': note_sound_tables,
+        'zoom_indicators': zoom_indicators,}
+
+
+    return render(request, template_name, context)
 #******************** DELETE ********************#
 class PersonDelete(SuccessMessageMixin, DeleteView):
     template_name = 'core/form_delete.html'

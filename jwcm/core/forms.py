@@ -2,8 +2,6 @@ from django import forms
 from jwcm.core.models import Congregation, AbstractMeeting
 
 
-class HomeForm(forms.Form):
-    pass
 
 class CongregationForm(forms.ModelForm):
     class Meta:

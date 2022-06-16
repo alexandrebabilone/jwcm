@@ -1,6 +1,7 @@
 from django.db import models
 from datetime import time
 from django.urls import reverse_lazy
+from jwcm.core.managers import PersonQuerySet
 
 
 class Congregation(models.Model):
@@ -102,6 +103,8 @@ class Person(models.Model):
 
     def __str__(self):
         return f'{self.full_name}'
+
+    objects = PersonQuerySet.as_manager()
 
     class Meta:
         verbose_name = 'pessoa'
