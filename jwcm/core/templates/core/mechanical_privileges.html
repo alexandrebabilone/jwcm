@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+{% load crispy_forms_tags %}
 {% block title %}Privilégios mecânicos{% endblock %}
 
 {% block menu_items %}
@@ -6,16 +7,37 @@
 {% endblock %}
 
 {% block content%}
+
 <h3>Privilégios mecânicos</h3>
 <hr>
 
-<h4>Microfones</h4>
-{% for mic in mics %}
-{{ mic.full_name }}<br>
-{% empty %}
-<p>Ainda não existem irmãos para trabalhar como microfones.</p>
+<form method="POST" id="form">
+    {% csrf_token %}
+    {{ form_search|crispy }}
+
+    <button type="submit" class="btn btn-success mt-3" name="buscar">
+        <i class="fas fa-check"></i> {{ button_1 }}
+    </button>
+</form>
+
+{% for form in formset %}
+<div class="row">
+    <h5>COLOCAR A AQUI: DATA/DIA DA SEMANA</h5>
+    <div class="col-sm">
+        {{ form.indicator_1|as_crispy_field }}
+        {{ form.indicator_2|as_crispy_field }}
+    </div>
+    <div class="col-sm">
+        {{ form.mic_1|as_crispy_field }}
+        {{ form.mic_2|as_crispy_field }}
+    </div>
+    <div class="col-sm">{{ form.note_sound_table|as_crispy_field }}</div>
+    <div class="col-sm">{{ form.zoom_indicator|as_crispy_field }}</div>
+    <hr>
+</div>
 {% endfor %}
 
+<a href="#" class="btn btn-warning" title="Designar Automaticamente">Designar Automaticamente <i class="fa-solid fa-robot"></i></a>
 
 {% endblock%}
 

@@ -1,10 +1,11 @@
+from django.forms import ModelForm, formset_factory, modelformset_factory
 from django.views.generic import TemplateView, UpdateView, ListView, CreateView, DeleteView
 from django.http import HttpResponse, HttpResponseRedirect
-from jwcm.core.forms import BatchPersonForm
+from jwcm.core.forms import BatchPersonForm, MechanicalPrivileges, MeetingMechanicalPrivilegesForm
 from django.shortcuts import get_object_or_404, render, resolve_url as r
 from django.urls import reverse_lazy
 from django.contrib import messages
-from jwcm.core.models import Congregation, Person, Meeting
+from jwcm.core.models import Congregation, Person, Meeting, PublicAssignment
 from django.contrib.messages.views import SuccessMessageMixin
 import pandas as pd
 import datetime
@@ -116,30 +117,61 @@ class PersonList(ListView):
 
 
 def mechanical_privileges(request):
-    """
-    Como será essa tela:
-    Criar uma tabela contendo 2 meses para cada privilégio
-    Privilégios: microfone, indicador, notebook/mesa de som, indicador Zoom,
-    """
-    #mechanical_privileges_form = HomeForm(request.POST or None)
-    # , {'form': mechanical_privileges_form}
-
+    form_search = MechanicalPrivileges(request.POST or None)
     user_congregation = request.user.profile.congregation
     template_name = 'core/mechanical_privileges.html'
+    #MeetingFormSet = modelformset_factory(model=Meeting, form=MeetingMechanicalPrivilegesForm, extra=0)
+    #formset = MeetingFormSet(request.POST or None)
 
-    mics = Person.objects.mics_per_congregation(user_congregation)
-    indicators = Person.objects.indicators_per_congregation(user_congregation)
-    note_sound_tables = Person.objects.note_sound_tables_per_congregation(user_congregation)
-    zoom_indicators = Person.objects.zoom_indicators_per_congregation(user_congregation)
 
     context = {
-        'mics': mics,
-        'indicators': indicators,
-        'note_sound_tables': note_sound_tables,
-        'zoom_indicators': zoom_indicators,}
+        'form_search': form_search,
+        'button_1': 'Buscar',
+        'button_2': 'Designar Automaticamente',
+        'button_3': 'Salvar',
+        'designar_automaticamente_disabled': True,
+    }
+
+    if request.method == 'POST':
+        if not form_search.is_valid():
+            return render(request, template_name, context)
 
 
-    return render(request, template_name, context)
+        if 'buscar' in request.POST:
+            meetings = Meeting.objects.select_range_per_congregation(form_search.cleaned_data['start_date'],
+                                                                     form_search.cleaned_data['end_date'],
+                                                                     congregation=user_congregation)
+
+            MeetingFormSet = modelformset_factory(model=Meeting, form=MeetingMechanicalPrivilegesForm, extra=0)
+            formset = MeetingFormSet(queryset=meetings)
+
+            for _form in formset:
+                _form.fields['indicator_1'].queryset = Person.objects.indicators_per_congregation(user_congregation)
+                _form.fields['indicator_2'].queryset = _form.fields['indicator_1'].queryset
+                _form.fields['mic_1'].queryset = Person.objects.mics_per_congregation(user_congregation)
+                _form.fields['mic_2'].queryset = _form.fields['mic_1'].queryset
+                _form.fields['note_sound_table'].queryset = Person.objects.note_sound_tables_per_congregation(user_congregation)
+                _form.fields['zoom_indicator'].queryset = Person.objects.zoom_indicators_per_congregation(user_congregation)
+
+            context = {
+                'form_search': form_search,
+                'formset': formset,
+                'meetings': meetings,
+                'button_1': 'Buscar',
+                'button_2': 'Designar Automaticamente',
+                'button_3': 'Salvar',
+            }
+            return render(request, template_name, context)
+    else:
+        context = {
+            'form_search': form_search,
+            'button_1': 'Buscar',
+            'button_2': 'Designar Automaticamente',
+            'button_3': 'Salvar',
+            'designar_automaticamente_disabled': False,
+        }
+
+        return render(request, template_name, context)
 #******************** DELETE ********************#
 class PersonDelete(SuccessMessageMixin, DeleteView):
     template_name = 'core/form_delete.html'
@@ -286,7 +318,7 @@ def _verify_meetings(user_congregation):
             list_meetings.append(midweek_meeting)
 
             date = date + datetime.timedelta(days=_delta_mid_to_weekend)
-            weekend_meeting = Meeting(date=date, congregation=user_congregation, type=Meeting.WEEKEND)
+            weekend_meeting = Meeting(date=date, congregation=user_congregation, type=Meeting.WEEKEND, public_assignment=PublicAssignment.objects.create(speech=None, speaker=None))
             list_meetings.append(weekend_meeting)
 
             date = date + datetime.timedelta(days=_delta_weekend_to_mid)
@@ -302,8 +334,7 @@ def _verify_meetings(user_congregation):
             list_meetings.append(midweek_meeting)
 
             date_last_meeting = date_last_meeting + datetime.timedelta(days=_delta_mid_to_weekend)
-            weekend_meeting = Meeting(date=date_last_meeting, congregation=user_congregation, type=Meeting.WEEKEND)
+            weekend_meeting = Meeting(date=date_last_meeting, congregation=user_congregation, type=Meeting.WEEKEND, public_assignment=PublicAssignment.objects.create(speech=None, speaker=None))
             list_meetings.append(weekend_meeting)
 
     Meeting.objects.bulk_create(list_meetings)
-

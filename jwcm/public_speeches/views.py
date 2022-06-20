@@ -6,14 +6,14 @@ from django.shortcuts import render
 from django.urls import reverse_lazy
 from django.contrib.messages.views import SuccessMessageMixin
 from django.db.models.deletion import ProtectedError
-
-from jwcm.core.models import PublicAssignment
+from jwcm.core.models import PublicAssignment, Meeting
 from jwcm.public_speeches.models import Speech
 from jwcm.public_speeches.forms import PublicAssignmentForm, CongregationGuestPopUpForm, PersonGuestForm
 
 
 
 #******************** CREATE ********************#
+# Não esta mais sendo usado
 def public_assignment_create(request):
     template_name = 'public_speeches/form.html'
     public_assignment_form = PublicAssignmentForm(request.POST or None, request=request)
@@ -38,6 +38,7 @@ def public_assignment_create(request):
         return render(request, template_name, context_data)
 
 
+# Não esta mais sendo usado
 class SpeechCreate(SuccessMessageMixin, CreateView):
     model = Speech
     template_name = 'public_speeches/form.html'
@@ -54,10 +55,10 @@ class SpeechCreate(SuccessMessageMixin, CreateView):
 #******************** LIST ********************#
 class PublicAssignmentList(ListView):
     template_name = 'public_speeches/list_public_assignment.html'
-    model = PublicAssignment
+    model = Meeting
 
     def get_queryset(self):
-        self.object_list = PublicAssignment.objects.filter(congregation=self.request.user.profile.congregation)
+        self.object_list = Meeting.objects.weekend_meetings_per_congregation(congregation=self.request.user.profile.congregation)
         return self.object_list
 
 
@@ -95,7 +96,7 @@ def public_assignment_update(request, pk):
             return render(request, template_name, context_data)
 
         public_assignment_form.save()
-        messages.success(request, f"Designação do dia {_format_date(public_assignment_form.cleaned_data['date'])} alterada com sucesso")
+        messages.success(request, f"Designação alterada com sucesso") #do dia {_format_date(public_assignment_form.cleaned_data['date'])}
         return HttpResponseRedirect(r('public-assignment-list'))
 
     else:

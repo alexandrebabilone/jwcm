@@ -9,10 +9,10 @@
 <h3>Arranjo de Oradores</h3>
 
 <hr>
-<a href="{% url 'public-assignment-create' %}" class="btn btn-primary">
+<!--a href="{% url 'public-assignment-create' %}" class="btn btn-primary">
     <i class="fas fa-plus"></i> Cadastrar
 </a>
-<br><br>
+<br><br-->
 
 
 <div class="table responsive">
@@ -27,23 +27,23 @@
         </thead>
 
         <tbody>
-            {% for public_assignment in object_list %}
+            {% for meeting in object_list %}
             <tr>                
-                <td> {{ public_assignment.date }} </td>
-                <td> {{ public_assignment.speech.theme }} ({{ public_assignment.speech.number }}) </td>
-                <td> {{ public_assignment.speaker.full_name }} </td>
+                <td> {{ meeting.date|date:"SHORT_DATE_FORMAT" }} </td>
+                <td> {{ meeting.public_assignment.speech.theme }} ({{ meeting.public_assignment.speech.number }}) </td>
+                <td> {{ meeting.public_assignment.speaker.full_name }} </td>
                 <td>
-                    <a href="{{public_assignment.get_update_url}}" class="btn btn-warning" title="Editar">
+                    <a href="{{meeting.public_assignment.get_update_url}}" class="btn btn-warning" title="Editar">
                         <i class="fas fa-pencil"></i>
                     </a>
-                    <a href="{{public_assignment.get_delete_url}}" class="btn btn-danger" title="Excluir">
+                    <!--a href="{{meeting.public_assignment.get_delete_url}}" class="btn btn-danger" title="Excluir">
                         <i class="fas fa-trash-can"></i>
-                    </a>
+                    </a-->
                 </td>
             </tr>
             {% empty %}
             <tr>
-                <td>Nenhum registro.</tD>
+                <td>Nenhum registro.</td>
             </tr>
             {% endfor %}
         </tbody>

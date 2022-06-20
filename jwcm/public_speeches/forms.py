@@ -16,10 +16,7 @@ class PublicAssignmentForm(forms.ModelForm):
     class Meta:
         model = PublicAssignment
         fields = ['speech', 'speaker']
-        widgets = {
-            'date': DatePickerInput(format=('%Y-%m-%d'), attrs={}),
-        } #adicionar o campo data novamente?
-
+        #widgets = {'date': DatePickerInput(format=('%Y-%m-%d'), attrs={}),} #adicionar o campo data novamente?
 
     def __init__(self, *args, **kwargs):
         self.request = kwargs.pop('request')

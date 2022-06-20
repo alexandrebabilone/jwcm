@@ -1,7 +1,8 @@
+from django.db.models import Q
 from django.db import models
 from datetime import time
 from django.urls import reverse_lazy
-from jwcm.core.managers import PersonQuerySet
+from jwcm.core.managers import PersonQuerySet, MeetingQuerySet
 from jwcm.public_speeches.models import Speech
 
 
@@ -102,6 +103,14 @@ class Person(models.Model):
     def get_delete_url(self):
         return reverse_lazy("person-delete", kwargs={"pk": self.id})
 
+    @property
+    def indicators(self):
+        return Meeting.objects.filter(Q(indicator_1=self) | Q(indicator_2=self))
+
+    @property
+    def mics(self):
+        return Meeting.objects.filter(Q(mic_1=self) | Q(mic_2=self))
+
     def __str__(self):
         return f'{self.full_name}'
 
@@ -132,7 +141,6 @@ class Part(models.Model):
 
 
 class PublicAssignment(models.Model):
-    congregation = models.ForeignKey(Congregation, on_delete=models.PROTECT)
     speech = models.ForeignKey(Speech, on_delete=models.PROTECT, null=True, verbose_name='Discurso')
     speaker = models.ForeignKey(Person, on_delete=models.PROTECT, null=True, verbose_name='Orador')
 
@@ -143,7 +151,11 @@ class PublicAssignment(models.Model):
         return reverse_lazy("public-assignment-delete", kwargs={"pk": self.id})
 
     def __str__(self):
-        return f'Designação do dia {self.date}, discurso {self.speech}'
+        return f'Designação pública - {self.speech} - {self.speaker}'
+
+    class Meta:
+        verbose_name = 'designação pública'
+        verbose_name_plural = 'designações públicas'
 
 
 class Meeting(models.Model):
@@ -157,23 +169,24 @@ class Meeting(models.Model):
 
     type = models.IntegerField(choices=MEETING_TYPE, default=MIDWEEK, verbose_name='Tipo de Reunião')
     date = models.DateField(verbose_name='Data')
-    president = models.ForeignKey(Person, on_delete=models.PROTECT, null=True)
-    indicator_1 = models.ForeignKey(Person, on_delete=models.PROTECT, null=True, related_name='+')
-    indicator_2 = models.ForeignKey(Person, on_delete=models.PROTECT, null=True, related_name='+')
-    mic_1 = models.ForeignKey(Person, on_delete=models.PROTECT, null=True, related_name='+')
-    mic_2 = models.ForeignKey(Person, on_delete=models.PROTECT, null=True, related_name='+')
-    note_sound_table = models.ForeignKey(Person, on_delete=models.PROTECT, null=True, related_name='+')
-    zoom_indicator = models.ForeignKey(Person, on_delete=models.PROTECT, null=True, related_name='+')
-    congregation = models.ForeignKey(Congregation, on_delete=models.PROTECT)
+    president = models.ForeignKey(Person, on_delete=models.PROTECT, null=True, verbose_name='Presidente')
+    indicator_1 = models.ForeignKey(Person, on_delete=models.PROTECT, null=True, related_name='+', verbose_name='Indicador 1')
+    indicator_2 = models.ForeignKey(Person, on_delete=models.PROTECT, null=True, related_name='+', verbose_name='Indicador 2')
+    mic_1 = models.ForeignKey(Person, on_delete=models.PROTECT, null=True, related_name='+', verbose_name='Microfone 1')
+    mic_2 = models.ForeignKey(Person, on_delete=models.PROTECT, null=True, related_name='+', verbose_name='Microfone 2')
+    note_sound_table = models.ForeignKey(Person, on_delete=models.PROTECT, null=True, related_name='audio_video_operator', verbose_name='Notebook/mesa de som')
+    zoom_indicator = models.ForeignKey(Person, on_delete=models.PROTECT, null=True, related_name='audio_video_indicator', verbose_name='Indicador Zoom')
+    congregation = models.ForeignKey(Congregation, on_delete=models.PROTECT, verbose_name='Congregação')
 
     # atributos específicos de reunião de meio de semana
-    parts = models.ForeignKey(Part, verbose_name='midweek_meeting', null=True, on_delete=models.PROTECT)
+    #parts = models.ForeignKey(Part, verbose_name='Partes TODO', null=True, on_delete=models.PROTECT)
 
     # atributos específicos de reunião de fim de semana
-    ruling_watchtower = models.ForeignKey(Person, on_delete=models.PROTECT, null=True, related_name='+')
-    reader_watchtower = models.ForeignKey(Person, on_delete=models.PROTECT, null=True, related_name='+')
-    public_speech = models.ForeignKey(PublicAssignment, on_delete=models.PROTECT, null=True)
+    ruling_watchtower = models.ForeignKey(Person, on_delete=models.PROTECT, null=True, related_name='+', verbose_name='Dirigente de A Sentinela')
+    reader_watchtower = models.ForeignKey(Person, on_delete=models.PROTECT, null=True, related_name='+', verbose_name='Leitor de A Sentinela')
+    public_assignment = models.ForeignKey(PublicAssignment, on_delete=models.PROTECT, null=True, verbose_name='Designação Pública')
 
+    objects = MeetingQuerySet.as_manager()
 
     def __str__(self):
         return f'[{self.date}] - Reunião de {self.MEETING_TYPE[self.type][1]}'
