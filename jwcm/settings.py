@@ -154,7 +154,7 @@ LOGOUT_REDIRECT_URL = 'login'
 STRONGHOLD_PUBLIC_NAMED_URLS = (
     'login',
     'logout',
-    'home',
+    #'home',
     'register',
     'about',
 )
