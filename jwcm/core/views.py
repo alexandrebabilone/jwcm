@@ -1,6 +1,7 @@
 from django.forms import ModelForm, formset_factory, modelformset_factory
 from django.views.generic import TemplateView, UpdateView, ListView, CreateView, DeleteView
 from django.http import HttpResponse, HttpResponseRedirect
+from django.views import View
 from jwcm.core.forms import BatchPersonForm, MechanicalPrivileges, MeetingMechanicalPrivilegesForm
 from django.shortcuts import get_object_or_404, render, resolve_url as r
 from django.urls import reverse_lazy
@@ -106,6 +107,36 @@ class PersonUpdate(SuccessMessageMixin, UpdateView):
         context['title'] = 'Atualizar Publicador'
         context['button'] = 'Salvar'
         return context
+
+
+class MechanicalPrivilegesUpdateView(SuccessMessageMixin, UpdateView):
+    model = Meeting
+    template_name = 'core/form.html'
+    fields = ['date', 'president', 'indicator_1', 'indicator_2', 'mic_1', 'mic_2', 'note_sound_table', 'zoom_indicator']
+    success_url = reverse_lazy('mechanical-privileges-list')
+    success_message = "Os privilégios da reunião de %(date)s foram alterados com sucesso."
+
+    def get_context_data(self, *args, **kwargs):
+        context = super().get_context_data(*args, **kwargs)
+        context['title'] = 'Atualizar Designações'
+        context['button'] = 'Salvar'
+        return context
+
+    def get_form(self, *args, **kwargs):
+        form = super().get_form(*args, **kwargs)
+        user_congregation = self.request.user.profile.congregation
+        form.fields['date'].disabled = True
+        form.fields['president'].queryset = Person.objects.elders_per_congregation(user_congregation)
+        form.fields['indicator_1'].queryset = Person.objects.indicators_per_congregation(user_congregation)
+        form.fields['indicator_2'].queryset = form.fields['indicator_1'].queryset
+        form.fields['mic_1'].queryset = Person.objects.mics_per_congregation(user_congregation)
+        form.fields['mic_2'].queryset = form.fields['mic_1'].queryset
+        form.fields['note_sound_table'].queryset = Person.objects.note_sound_tables_per_congregation(
+            user_congregation)
+        form.fields['zoom_indicator'].queryset = Person.objects.zoom_indicators_per_congregation(
+            user_congregation)
+
+        return form
 #******************** LIST ********************#
 class PersonList(ListView):
     template_name = 'core/list_person.html'
@@ -116,62 +147,72 @@ class PersonList(ListView):
         return self.object_list
 
 
-def mechanical_privileges(request):
-    form_search = MechanicalPrivileges(request.POST or None)
-    user_congregation = request.user.profile.congregation
+class MechanicalPrivilegesListView(ListView):
     template_name = 'core/mechanical_privileges.html'
-    #MeetingFormSet = modelformset_factory(model=Meeting, form=MeetingMechanicalPrivilegesForm, extra=0)
-    #formset = MeetingFormSet(request.POST or None)
+    model = Meeting
+
+    def get_queryset(self):
+        self.object_list = Meeting.objects.meetings_per_congregation(congregation=self.request.user.profile.congregation)
+        return self.object_list
 
 
+class MechanicalPrivilegesView(View):
+    template_name = 'core/mechanical_privileges.html'
+    form_class = MechanicalPrivileges
+    success_url = reverse_lazy('home')
     context = {
-        'form_search': form_search,
         'button_1': 'Buscar',
         'button_2': 'Designar Automaticamente',
         'button_3': 'Salvar',
-        'designar_automaticamente_disabled': True,
     }
 
-    if request.method == 'POST':
-        if not form_search.is_valid():
-            return render(request, template_name, context)
+    def get(self, request, *args, **kwargs):
+        form_search = self.form_class()
+        self.context['form_search'] = form_search
+        return render(request, self.template_name, self.context)
 
+    def post(self, request, *args, **kwargs):
+        form_search = self.form_class(request.POST)
+        user_congregation = request.user.profile.congregation
+
+        if not form_search.is_valid():
+            return render(request, self.template_name, {'form_search': form_search})
 
         if 'buscar' in request.POST:
-            meetings = Meeting.objects.select_range_per_congregation(form_search.cleaned_data['start_date'],
-                                                                     form_search.cleaned_data['end_date'],
-                                                                     congregation=user_congregation)
+            MeetingFormSet = modelformset_factory(model=Meeting,
+                                                  form=MeetingMechanicalPrivilegesForm,
+                                                  extra=0)
+            meetings_qs = Meeting.objects.select_range_per_congregation(
+                form_search.cleaned_data['start_date'],
+                form_search.cleaned_data['end_date'],
+                congregation=user_congregation)
 
-            MeetingFormSet = modelformset_factory(model=Meeting, form=MeetingMechanicalPrivilegesForm, extra=0)
-            formset = MeetingFormSet(queryset=meetings)
+            formset = MeetingFormSet(queryset=meetings_qs) #request.POST or None,
 
             for _form in formset:
                 _form.fields['indicator_1'].queryset = Person.objects.indicators_per_congregation(user_congregation)
                 _form.fields['indicator_2'].queryset = _form.fields['indicator_1'].queryset
                 _form.fields['mic_1'].queryset = Person.objects.mics_per_congregation(user_congregation)
                 _form.fields['mic_2'].queryset = _form.fields['mic_1'].queryset
-                _form.fields['note_sound_table'].queryset = Person.objects.note_sound_tables_per_congregation(user_congregation)
-                _form.fields['zoom_indicator'].queryset = Person.objects.zoom_indicators_per_congregation(user_congregation)
+                _form.fields['note_sound_table'].queryset = Person.objects.note_sound_tables_per_congregation(
+                    user_congregation)
+                _form.fields['zoom_indicator'].queryset = Person.objects.zoom_indicators_per_congregation(
+                    user_congregation)
 
-            context = {
-                'form_search': form_search,
-                'formset': formset,
-                'meetings': meetings,
-                'button_1': 'Buscar',
-                'button_2': 'Designar Automaticamente',
-                'button_3': 'Salvar',
-            }
-            return render(request, template_name, context)
-    else:
-        context = {
-            'form_search': form_search,
-            'button_1': 'Buscar',
-            'button_2': 'Designar Automaticamente',
-            'button_3': 'Salvar',
-            'designar_automaticamente_disabled': False,
-        }
+            self.context['form_search'] = form_search
+            self.context['formset'] = formset
+            #self.context['meetings'] = meetings
 
-        return render(request, template_name, context)
+            return render(request, self.template_name, self.context)
+
+        if 'salvar' in request.POST:
+            formset = self.context['formset']
+            if not formset.is_valid():
+                return render(request, self.template_name, self.context)
+
+            formset.save()
+            messages.success(request, 'Privilégios designados com sucesso.')
+            return HttpResponseRedirect(r('home'))
 #******************** DELETE ********************#
 class PersonDelete(SuccessMessageMixin, DeleteView):
     template_name = 'core/form_delete.html'

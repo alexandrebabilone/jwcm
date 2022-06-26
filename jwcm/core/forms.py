@@ -32,7 +32,6 @@ class MechanicalPrivileges(Form):
 
 
 class MeetingMechanicalPrivilegesForm(ModelForm):
-    date = forms.DateField(disabled=True, label='Data')
 
     class Meta:
         model = Meeting

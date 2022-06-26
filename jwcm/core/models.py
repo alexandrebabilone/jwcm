@@ -1,4 +1,4 @@
-from django.db.models import Q
+from django.db.models import Q, UniqueConstraint
 from django.db import models
 from datetime import time
 from django.urls import reverse_lazy
@@ -25,7 +25,7 @@ class Congregation(models.Model):
         (SABADO, 'Sábado'),
     )
 
-    name = models.CharField(max_length=50, unique=True, verbose_name='Nome')
+    name = models.CharField(max_length=50, verbose_name='Nome')
     number = models.IntegerField(unique=True, verbose_name='Número', null=True)
     midweek_meeting_time = models.TimeField(verbose_name='Horário da reunião de meio de semana',
                                             default=time(19, 30, 00), null=True)
@@ -81,7 +81,6 @@ class Person(models.Model):
 
     full_name = models.CharField(max_length=50, null=True, verbose_name='Nome completo')
     telephone = models.CharField(max_length=16, blank=True, verbose_name='Telefone')
-
     gender = models.IntegerField(choices=GENDER, default=MASCULINO, verbose_name='Sexo')
     privilege = models.IntegerField(choices=PRIVILEGE, default=SEM_PRIVILEGIO_ESPECIAL, verbose_name='Privilégio especial')
     modality = models.IntegerField(choices=MODALITY, default=PUBLICADOR, verbose_name='Ministério')
@@ -94,7 +93,6 @@ class Person(models.Model):
     weekend_meeting_president = models.BooleanField(default=False, verbose_name='Presidente - Reunião de fim de semana')
     midweek_meeting_president = models.BooleanField(default=False, verbose_name='Presidente - Reunião de meio de semana')
     student_parts = models.BooleanField(default=True, verbose_name='Partes de Estudante')
-
     congregation = models.ForeignKey(Congregation, on_delete=models.PROTECT, null=True)
 
     def get_update_url(self):
@@ -119,6 +117,7 @@ class Person(models.Model):
     class Meta:
         verbose_name = 'pessoa'
         verbose_name_plural = 'pessoas'
+        constraints = [UniqueConstraint(fields=['full_name', 'congregation'], name='unique_full_name_per_congregation')]
 
 
 class Part(models.Model):
@@ -191,6 +190,10 @@ class Meeting(models.Model):
     def __str__(self):
         return f'[{self.date}] - Reunião de {self.MEETING_TYPE[self.type][1]}'
 
+    def get_update_url(self):
+        return reverse_lazy('mechanical-privileges-update', kwargs={"pk": self.id})
+
     class Meta:
         verbose_name = 'reunião'
         verbose_name_plural = 'reuniões'
+        constraints = [UniqueConstraint(fields=['date', 'congregation'], name='unique_meeting_per_congregation')]

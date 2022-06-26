@@ -8,6 +8,9 @@ class MeetingQuerySet(models.QuerySet):
     def weekend_meetings_per_congregation(self, congregation):
         return self.filter(congregation=congregation).filter(type=1).order_by('date')
 
+    def meetings_per_congregation(self, congregation):
+        return self.filter(congregation=congregation).order_by('date')
+
     def select_range_weekend_meetings_per_congregation(self, congregation, start_date, end_date):
         return self.filter(congregation=congregation).filter(date__gte=start_date).filter(date__lte=end_date).order_by('date')
 
