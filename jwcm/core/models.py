@@ -37,6 +37,12 @@ class Congregation(models.Model):
                                               verbose_name='Dia da reunião de fim de semana', null=True)
     host = models.BooleanField(default=False, verbose_name='Congregação Anfitriã')
     random_key = models.CharField(max_length=50, unique=True, null=True)
+    #ruling_watchtower = models.ForeignKey(Person, on_delete=models.PROTECT, null=True, related_name='+', verbose_name='Dirigente de A Sentinela')
+    #SS
+    #SECRETARIO
+    #SUP VIDA E MINISTERIO
+    #COORDENADOR
+
 
     def __str__(self):
         return f'{self.name}'
@@ -120,25 +126,6 @@ class Person(models.Model):
         constraints = [UniqueConstraint(fields=['full_name', 'congregation'], name='unique_full_name_per_congregation')]
 
 
-class Part(models.Model):
-    #time? lesson?
-    theme = models.CharField(verbose_name='Tema', max_length=100)
-    owner = models.ForeignKey(Person, verbose_name='Dono da parte', on_delete=models.PROTECT, null=True, related_name='owner')
-    helper = models.ForeignKey(Person, verbose_name='Ajudante', on_delete=models.PROTECT, null=True, related_name='helper')
-
-    #TESOUROS DA PALAVRA DE DEUS
-    #discurso 10min
-    #joias espirituais
-    #leitura da biblia
-
-    #FAÇA SEU MELHOR NO MINISTÉRIO
-    #1 a 4 partes nessa seção
-
-    #NOSSA VIDA CRISTÃ
-    #1 a 3 partes
-    #estudo biblico
-
-
 class PublicAssignment(models.Model):
     speech = models.ForeignKey(Speech, on_delete=models.PROTECT, null=True, verbose_name='Discurso')
     speaker = models.ForeignKey(Person, on_delete=models.PROTECT, null=True, verbose_name='Orador')
@@ -177,8 +164,7 @@ class Meeting(models.Model):
     zoom_indicator = models.ForeignKey(Person, on_delete=models.PROTECT, null=True, related_name='audio_video_indicator', verbose_name='Indicador Zoom')
     congregation = models.ForeignKey(Congregation, on_delete=models.PROTECT, verbose_name='Congregação')
 
-    # atributos específicos de reunião de meio de semana
-    #parts = models.ForeignKey(Part, verbose_name='Partes TODO', null=True, on_delete=models.PROTECT)
+    # as partes (relação ManyToMany) foram definidas na classe Parts
 
     # atributos específicos de reunião de fim de semana
     ruling_watchtower = models.ForeignKey(Person, on_delete=models.PROTECT, null=True, related_name='+', verbose_name='Dirigente de A Sentinela')
