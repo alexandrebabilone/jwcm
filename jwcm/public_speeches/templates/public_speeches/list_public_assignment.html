@@ -29,7 +29,7 @@
         <tbody>
             {% for meeting in object_list %}
             <tr>                
-                <td> {{ meeting.date|date:"SHORT_DATE_FORMAT" }} </td>
+                <td> {{ meeting.date|date:"Y/m/d" }} </td>
                 <td> {{ meeting.public_assignment.speech.theme }} ({{ meeting.public_assignment.speech.number }}) </td>
                 <td> {{ meeting.public_assignment.speaker.full_name }} </td>
                 <td>

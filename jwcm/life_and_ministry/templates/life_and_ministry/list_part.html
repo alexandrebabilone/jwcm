@@ -1,51 +1,45 @@
 {% extends "base.html" %}
-{% block title %}Privilégios mecânicos{% endblock %}
+{% block title %}Partes da Reunião Vida e Ministério{% endblock %}
 
 {% block menu_items %}
-    {% include 'core/menu_items.html' %}
+    {% include 'life_and_ministry/menu_items.html' %}
 {% endblock %}
 
 {% block content%}
-<h3>Privilégios mecânicos</h3>
+<h3>Partes</h3>
+
 <hr>
+<br><br>
+
 
 <div class="table responsive">
-    <table class="table table-striped" id="table-mechanical-privileges">
+    <table class="table table-striped" id="table-part">
         <thead>
             <tr>
                 <th>Data</th>
-                <th>Presidente</th>
-                <th>Indicador 1</th>
-                <th>Indicador 2</th>
-                <th>Microfone 1</th>
-                <th>Microfone 2</th>
-                <th>Notebook/Mesa de som</th>
-                <th>Indicador Zoom</th>
-                <th>Opções</th>
+                <th>Tema</th>
+                <th>Seção</th>
             </tr>
         </thead>
 
         <tbody>
-            {% for meeting in object_list %}
-            <tr>
-                <td> {{ meeting.date|date:"Y/m/d" }} </td>
-                <td> {{ meeting.president }} </td>
-                <td> {{ meeting.indicator_1 }} </td>
-                <td> {{ meeting.indicator_2 }} </td>
-                <td> {{ meeting.mic_1 }} </td>
-                <td> {{ meeting.mic_2 }} </td>
-                <td> {{ meeting.note_sound_table }} </td>
-                <td> {{ meeting.zoom_indicator }} </td>
-
+            {% for part in object_list %}
+            <tr>                
+                <td> {{ part.date|date:"Y/m/d" }} </td>
+                <td> {{ part.theme }} </td>
+                <td> {{ part.section }} </td>
                 <td>
-                    <a href="{{meeting.get_update_url}}" class="btn btn-warning" title="Editar">
+                    <a href="{{person.get_update_url}}" class="btn btn-warning" title="Editar">
                         <i class="fas fa-pencil"></i>
+                    </a>
+                    <a href="{{person.get_delete_url}}" class="btn btn-danger" title="Excluir">
+                        <i class="fas fa-trash-can"></i>
                     </a>
                 </td>
             </tr>
             {% empty %}
             <tr>
-                <td>Nenhum registro.</td>
+                <td>Nenhum registro.</tD>
             </tr>
             {% endfor %}
         </tbody>
@@ -57,7 +51,7 @@
 {% block scripts %}
 <script>
     $(document).ready(function () {
-        $('#table-mechanical-privileges').DataTable({
+        $('#table-part').DataTable({
             responsive: true,
             // "bSort": false,
             "aaSorting": [[0, "asc"]],

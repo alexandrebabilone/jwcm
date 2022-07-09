@@ -26,7 +26,6 @@ urlpatterns = [
     path('life_and_ministry/', include('jwcm.life_and_ministry.urls')),
     path('users/', include('jwcm.users.urls')),
 
-    #path('', Home.as_view(), name='home'),
     path('', home, name='home'),
     path('about/', About.as_view(), name='about'),
 
