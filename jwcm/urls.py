@@ -20,8 +20,8 @@ from jwcm.core.views import About, CongregationUpdate, PersonList, PersonCreate,
     MechanicalPrivilegesListView, MechanicalPrivilegesUpdateView
 
 
-
 urlpatterns = [
+    path('admin/', admin.site.urls),
     path('public_speeches/', include('jwcm.public_speeches.urls')),
     path('life_and_ministry/', include('jwcm.life_and_ministry.urls')),
     path('users/', include('jwcm.users.urls')),
@@ -37,9 +37,6 @@ urlpatterns = [
     path('person/delete/<int:pk>/', PersonDelete.as_view(), name='person-delete'),
     path('person/create/batch/', person_batch_create, name='person-batch-create'),
 
-    #path('mechanical_privileges/', MechanicalPrivilegesView.as_view(), name='mechanical-privileges'),
     path('mechanical_privileges/', MechanicalPrivilegesListView.as_view(), name='mechanical-privileges-list'),
     path('mechanical_privileges/<int:pk>/', MechanicalPrivilegesUpdateView.as_view(), name='mechanical-privileges-update'),
-
-    path('admin/', admin.site.urls),
 ]

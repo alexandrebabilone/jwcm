@@ -1,5 +1,7 @@
 from django.db import models
+from django.urls import reverse_lazy
 from jwcm.core.models import Person, Meeting
+from datetime import datetime
 
 
 
@@ -16,13 +18,18 @@ class Part(models.Model):
 
     section = models.IntegerField(choices=SECTION, default=TESOUROS_DA_PALAVRA_DE_DEUS, verbose_name='Seção')
     theme = models.CharField(verbose_name='Tema', max_length=100)
+    date = models.DateField(verbose_name='Data', default=datetime.now)
+
+
+    def __str__(self):
+        return f'Parte da reunião Vida e Ministério: {self.theme} {self.SECTION[self.section][1]}'
+
+    def get_update_url(self):
+        return reverse_lazy("part-update", kwargs={"pk": self.id})
 
     class Meta:
         verbose_name = 'parte'
         verbose_name_plural = 'partes'
-
-    def __str__(self):
-        return f'Parte da reunião Vida e Ministério: {self.theme} {self.SECTION[self.section][1]}'
 
 
 class LifeAndMinistryAssignment(models.Model):
@@ -34,24 +41,12 @@ class LifeAndMinistryAssignment(models.Model):
                                   related_name='helper')
     meeting = models.ManyToManyField(Meeting, verbose_name='Reunião')
 
-    class Meta:
-        verbose_name = 'Designação da reunião Vida e Ministério'
-        verbose_name_plural = 'Designações da reunião Vida e Ministério'
-
     def __str__(self):
         return f'Designação da reunião Vida e Ministério: {self.owner} {self.part.theme}'
 
-"""class LifeAndMinistry(models.Model):
-    parts = models.ManyToManyField(Part)
+    def get_update_url(self):
+        return reverse_lazy("assignment-update", kwargs={"pk": self.id})
 
-    #TESOUROS DA PALAVRA DE DEUS
-    #discurso 10min
-    #joias espirituais
-    #leitura da biblia
-
-    #FAÇA SEU MELHOR NO MINISTÉRIO
-    #1 a 4 partes nessa seção
-
-    #NOSSA VIDA CRISTÃ
-    #1 a 3 partes
-    #estudo biblico"""
+    class Meta:
+        verbose_name = 'Designação da reunião Vida e Ministério'
+        verbose_name_plural = 'Designações da reunião Vida e Ministério'

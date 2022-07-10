@@ -1,12 +1,12 @@
 {% extends "base.html" %}
-{% block title %}Partes da Reunião Vida e Ministério{% endblock %}
+{% block title %}Designações da Reunião Vida e Ministério{% endblock %}
 
 {% block menu_items %}
     {% include 'life_and_ministry/menu_items.html' %}
 {% endblock %}
 
 {% block content%}
-<h3>Partes</h3>
+<h3>Designações</h3>
 
 
 <hr>
@@ -14,24 +14,26 @@
 
 
 <div class="table responsive">
-    <table class="table table-striped" id="table-part">
+    <table class="table table-striped" id="table-assignment">
         <thead>
             <tr>
                 <th>Data</th>
                 <th>Tema</th>
-                <th>Seção</th>
+                <th>Publicador</th>
+                <th>Ajudante</th>
                 <th>Opções</th>
             </tr>
         </thead>
 
         <tbody>
-            {% for part in object_list %}
+            {% for assignment in object_list %}
             <tr>                
-                <td> {{ part.date|date:"Y/m/d" }} </td>
-                <td> {{ part.theme }} </td>
-                <td> {{ part.section }} </td>
+                <td> {{ assignment.part.date|date:"Y/m/d" }} </td>
+                <td> {{ assignment.part.theme }}  ({{ assignment.part.section }}) </td>
+                <td> {{ assignment.owner }} </td>
+                <td> {{ assignment.assistant }} </td>
                 <td>
-                    <a href="{{part.get_update_url}}" class="btn btn-warning" title="Editar">
+                    <a href="{{assignment.get_update_url}}" class="btn btn-warning" title="Editar">
                         <i class="fas fa-pencil"></i>
                     </a>
                 </td>
@@ -50,7 +52,7 @@
 {% block scripts %}
 <script>
     $(document).ready(function () {
-        $('#table-part').DataTable({
+        $('#table-assignment').DataTable({
             responsive: true,
             // "bSort": false,
             "aaSorting": [[0, "asc"]],

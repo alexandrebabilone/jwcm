@@ -14,8 +14,13 @@ Including another URLconf
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
 from django.urls import path
+from jwcm.life_and_ministry.views import PartListView, AssignmentListView, PartUpdate, AssignmentUpdate
 
 
 urlpatterns = [
+    path('part/', PartListView.as_view(), name='part-list'),
+    path('part/update/<int:pk>/', PartUpdate.as_view(), name='part-update'),
 
+    path('assignment/', AssignmentListView.as_view(), name='assignment-list'),
+    path('assignment/update/<int:pk>/', AssignmentUpdate.as_view(), name='assignment-update'),
 ]
