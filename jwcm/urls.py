@@ -16,7 +16,7 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path, include
 from jwcm.core.views import About, CongregationUpdate, PersonList, PersonCreate, \
-    PersonUpdate, PersonDelete, person_batch_create, home, MechanicalPrivilegesView,\
+    PersonUpdate, PersonDelete, person_batch_create, home, BulletinBoardView,\
     MechanicalPrivilegesListView, MechanicalPrivilegesUpdateView
 
 
@@ -39,4 +39,6 @@ urlpatterns = [
 
     path('mechanical_privileges/', MechanicalPrivilegesListView.as_view(), name='mechanical-privileges-list'),
     path('mechanical_privileges/<int:pk>/', MechanicalPrivilegesUpdateView.as_view(), name='mechanical-privileges-update'),
+
+    path('report/bulletin_board/', BulletinBoardView.as_view(), name='bulletin-board'),
 ]

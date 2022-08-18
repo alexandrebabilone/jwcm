@@ -376,3 +376,10 @@ def _get_first_weekend_meeting_day_of_month(some_date, weekend_day):
         first_weekend_meeting_day_of_month += datetime.timedelta(days=1)
 
     return first_weekend_meeting_day_of_month
+
+
+#******************** REPORTS ********************#
+# TODO reports
+class BulletinBoardView(TemplateView):
+    template_name = 'core/bulletin_board.html'
+#******************** REPORTS ********************#
