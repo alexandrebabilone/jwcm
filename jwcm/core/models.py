@@ -37,11 +37,6 @@ class Congregation(models.Model):
                                               verbose_name='Dia da reunião de fim de semana', null=True)
     host = models.BooleanField(default=False, verbose_name='Congregação Anfitriã')
     random_key = models.CharField(max_length=50, unique=True, null=True)
-    #ruling_watchtower = models.ForeignKey(Person, on_delete=models.PROTECT, null=True, related_name='+', verbose_name='Dirigente de A Sentinela')
-    #SS
-    #SECRETARIO
-    #SUP VIDA E MINISTERIO
-    #COORDENADOR
 
 
     def __str__(self):
@@ -169,7 +164,7 @@ class Meeting(models.Model):
     # atributos específicos de reunião de fim de semana
     ruling_watchtower = models.ForeignKey(Person, on_delete=models.PROTECT, null=True, related_name='+', verbose_name='Dirigente de A Sentinela')
     reader_watchtower = models.ForeignKey(Person, on_delete=models.PROTECT, null=True, related_name='+', verbose_name='Leitor de A Sentinela')
-    public_assignment = models.ForeignKey(PublicAssignment, on_delete=models.PROTECT, null=True, verbose_name='Designação Pública')
+    public_assignment = models.ForeignKey(PublicAssignment, on_delete=models.CASCADE, null=True, verbose_name='Designação Pública')
 
     objects = MeetingQuerySet.as_manager()
 

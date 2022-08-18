@@ -29,7 +29,7 @@
             {% for assignment in object_list %}
             <tr>                
                 <td> {{ assignment.part.date|date:"Y/m/d" }} </td>
-                <td> {{ assignment.part.theme }}  ({{ assignment.part.section }}) </td>
+                <td> {{ assignment.part.theme }}  [{{ assignment.part.get_section_display }}] </td>
                 <td> {{ assignment.owner }} </td>
                 <td> {{ assignment.assistant }} </td>
                 <td>

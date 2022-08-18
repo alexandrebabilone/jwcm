@@ -96,6 +96,8 @@ def public_assignment_update(request, pk):
             return render(request, template_name, context_data)
 
         public_assignment_form.save()
+        # Meeting.objects.filter(public_assignment__id=)
+        # self.fields['date'].disabled = True
         messages.success(request, f"Designação alterada com sucesso") #do dia {_format_date(public_assignment_form.cleaned_data['date'])}
         return HttpResponseRedirect(r('public-assignment-list'))
 

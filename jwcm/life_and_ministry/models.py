@@ -20,9 +20,8 @@ class Part(models.Model):
     theme = models.CharField(verbose_name='Tema', max_length=100)
     date = models.DateField(verbose_name='Data', default=datetime.now)
 
-
     def __str__(self):
-        return f'Parte da reunião Vida e Ministério: {self.theme} {self.SECTION[self.section][1]}'
+        return f'{self.date.strftime("%d/%m/%Y")} - [{self.SECTION[self.section][1]}] - {self.theme}'
 
     def get_update_url(self):
         return reverse_lazy("part-update", kwargs={"pk": self.id})
@@ -33,7 +32,7 @@ class Part(models.Model):
 
 
 class LifeAndMinistryAssignment(models.Model):
-    part = models.ForeignKey(Part, on_delete=models.PROTECT, null=True, verbose_name='Parte')
+    part = models.ForeignKey(Part, on_delete=models.CASCADE, verbose_name='Parte')
     owner = models.ForeignKey(Person, verbose_name='Dono da parte',
                                   on_delete=models.PROTECT, null=True, related_name='owner')
     assistant = models.ForeignKey(Person, verbose_name='Ajudante',
@@ -42,7 +41,7 @@ class LifeAndMinistryAssignment(models.Model):
     meeting = models.ManyToManyField(Meeting, verbose_name='Reunião')
 
     def __str__(self):
-        return f'Designação da reunião Vida e Ministério: {self.owner} {self.part.theme}'
+        return f'Designação: {self.owner} {self.part.theme}'
 
     def get_update_url(self):
         return reverse_lazy("assignment-update", kwargs={"pk": self.id})

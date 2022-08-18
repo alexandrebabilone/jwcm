@@ -29,7 +29,7 @@
             <tr>                
                 <td> {{ part.date|date:"Y/m/d" }} </td>
                 <td> {{ part.theme }} </td>
-                <td> {{ part.section }} </td>
+                <td> {{ part.get_section_display }} </td>
                 <td>
                     <a href="{{part.get_update_url}}" class="btn btn-warning" title="Editar">
                         <i class="fas fa-pencil"></i>

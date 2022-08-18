@@ -14,7 +14,7 @@ import datetime
 
 def home(request):
     template_name = 'home.html'
-    _verify_meetings(request.user.profile.congregation)
+    _verify_weekend_meetings(request.user.profile.congregation)
 
     return render(request, template_name)
 
@@ -330,52 +330,49 @@ def _batch_read_and_create_person(df_batch, congregation):
     Person.objects.bulk_create(list_person)
 
 
-def _verify_meetings(user_congregation):
+def _verify_weekend_meetings(congregation):
     """
-     O objetivo dessa função é garantir que sempre haja reuniões criadas para as próximas 25 semanas
+     O objetivo dessa função é garantir a criação de reuniões de fim de semana.
+     Quando não houver nenhuma reunião cadastrada (apenas na primeira vez), serão criadas reuniões para as próximas 25 semanas.
+     Quaando houver reuniões cadastradas, a cada 30 dias (ou por volta de), serão criadas reuniões para as próximas 5 semanas.
     """
-    list_meetings = []
+    NUM_WEEKS_FIRST = 25
+    NUM_WEEKS_AFTER = 5
 
     current_date = datetime.date.today()
-    current_month = current_date.month
-    current_year = current_date.year
 
-    midweek_day = user_congregation.midweek_meeting_day
-    weekend_day = user_congregation.weekend_meeting_day
+    weekend_day = congregation.weekend_meeting_day
+    objects_meetings = Meeting.objects.filter(congregation=congregation).order_by('-date')
 
-    _delta_mid_to_weekend = weekend_day - midweek_day
-    _delta_weekend_to_mid = (6 - weekend_day) + (midweek_day + 1)
+    if objects_meetings:
+        date_last_meeting = objects_meetings[0].date
 
-    objects_meetings = Meeting.objects.filter(congregation=user_congregation).order_by('-date')
+        if (date_last_meeting - current_date).days < 145:
+            initial_date = date_last_meeting + datetime.timedelta(weeks=1)
+            _create_weekend_meetings(initial_date, NUM_WEEKS_AFTER, Meeting.WEEKEND, congregation)
+    else:
+        initial_date = _get_first_weekend_meeting_day_of_month(current_date, weekend_day)
+        _create_weekend_meetings(initial_date, NUM_WEEKS_FIRST, Meeting.WEEKEND, congregation)
 
-    # se não existe nenhuma reunião cadastrada, criar para as próximas 25 semanas meses a partir do mês corrente
-    if not objects_meetings:
-        date = datetime.date(current_year, current_month, 1)
-        while date.weekday() != midweek_day:
-            date = date + datetime.timedelta(days=1)
 
-        for _ in range(25):
-            midweek_meeting = Meeting(date=date, congregation=user_congregation, type=Meeting.MIDWEEK)
-            list_meetings.append(midweek_meeting)
+def _create_weekend_meetings(initial_date, num_of_meetings, type_of_meeting, congregation):
+    list_meetings = []
 
-            date = date + datetime.timedelta(days=_delta_mid_to_weekend)
-            weekend_meeting = Meeting(date=date, congregation=user_congregation, type=Meeting.WEEKEND, public_assignment=PublicAssignment.objects.create(speech=None, speaker=None))
-            list_meetings.append(weekend_meeting)
-
-            date = date + datetime.timedelta(days=_delta_weekend_to_mid)
-    # existem reuniões cadastradas, mas não tem mais 5 meses de reunião criados à frente -> então cria mais 5 semanas de reunião
-    elif (objects_meetings[0].date - current_date).days < 150:
-        last_meeting = objects_meetings[0]
-        date_last_meeting = last_meeting.date
-        # a ultima reunião sempre será a de fim de semana
-
-        for _ in range(5):
-            date_last_meeting = date_last_meeting + datetime.timedelta(days=_delta_weekend_to_mid)
-            midweek_meeting = Meeting(date=date_last_meeting, congregation=user_congregation, type=Meeting.MIDWEEK)
-            list_meetings.append(midweek_meeting)
-
-            date_last_meeting = date_last_meeting + datetime.timedelta(days=_delta_mid_to_weekend)
-            weekend_meeting = Meeting(date=date_last_meeting, congregation=user_congregation, type=Meeting.WEEKEND, public_assignment=PublicAssignment.objects.create(speech=None, speaker=None))
-            list_meetings.append(weekend_meeting)
+    for _ in range(num_of_meetings):
+        weekend_meeting = Meeting(date=initial_date, congregation=congregation, type=type_of_meeting,
+                                  public_assignment=PublicAssignment.objects.create(speech=None, speaker=None))
+        list_meetings.append(weekend_meeting)
+        initial_date += datetime.timedelta(weeks=1)
 
     Meeting.objects.bulk_create(list_meetings)
+
+
+def _get_first_weekend_meeting_day_of_month(some_date, weekend_day):
+    current_month = some_date.month
+    current_year = some_date.year
+    first_weekend_meeting_day_of_month = datetime.date(current_year, current_month, 1)
+
+    while first_weekend_meeting_day_of_month.weekday() != weekend_day:
+        first_weekend_meeting_day_of_month += datetime.timedelta(days=1)
+
+    return first_weekend_meeting_day_of_month
