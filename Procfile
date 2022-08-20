@@ -1,1 +1,1 @@
-web: gunicorn jwcm.wsgi --log-file --timeout 120 -
+web: gunicorn jwcm.wsgi --timeout 120 --log-file -
