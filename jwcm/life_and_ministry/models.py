@@ -17,7 +17,7 @@ class Part(models.Model):
     )
 
     section = models.IntegerField(choices=SECTION, default=TESOUROS_DA_PALAVRA_DE_DEUS, verbose_name='Seção')
-    theme = models.CharField(verbose_name='Tema', max_length=255)
+    theme = models.TextField(verbose_name='Tema')
     date = models.DateField(verbose_name='Data', default=datetime.now)
 
     def __str__(self):
