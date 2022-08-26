@@ -35,7 +35,7 @@ def _verify_midweek_meetings(congregation):
         initial_date = _get_first_midweek_meeting_day_of_month(current_date, midweek_day)
         _parts_scraping(initial_date, NUM_WEEKS_FIRST, congregation)
 
-
+#TODO erro em produção: reunião duplicada sendo criada. DETAIL:  Key (date, congregation_id)=(2022-09-28, 1) already exists.
 def _parts_scraping(initial_date, num_of_weeks, congregation):
     not_parts = "Cântico \d{1,3}", "Comentários iniciais", "Comentários finais"
     start_time = time.time()
@@ -116,7 +116,7 @@ class AssignmentUpdate(SuccessMessageMixin, UpdateView):
     template_name = 'life_and_ministry/form.html'
     fields = ['part', 'owner', 'assistant']
     success_url = reverse_lazy('assignment-list')
-    success_message = "A designação do dia %(part.date)s foi alterada com sucesso."
+    success_message = "A designação: %(part)s foi alterada com sucesso."
 
     def get_context_data(self, *args, **kwargs):
         context = super().get_context_data(*args, **kwargs)
@@ -127,6 +127,7 @@ class AssignmentUpdate(SuccessMessageMixin, UpdateView):
     def get_form(self, *args, **kwargs):
         form = super().get_form(*args, **kwargs)
         form.fields['part'].disabled = True
+        form.fields['assistant'].required = False
         return form
 
 
