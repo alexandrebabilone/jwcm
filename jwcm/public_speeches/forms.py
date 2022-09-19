@@ -21,7 +21,7 @@ class PublicAssignmentForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         self.request = kwargs.pop('request')
         super(PublicAssignmentForm, self).__init__(*args, **kwargs)
-        self.fields['speaker'].queryset = Person.objects.filter(congregation=self.request.user.profile.congregation).filter(Q(privilege=Person.ANCIAO) | Q(privilege=Person.SERVO_MINISTERIAL))
+        self.fields['speaker'].queryset = Person.objects.elders_and_ministerial_servants_per_congregation(self.request.user.profile.congregation)
 
 
 class PersonGuestForm(forms.ModelForm):

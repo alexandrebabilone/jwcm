@@ -21,6 +21,9 @@ class PersonQuerySet(models.QuerySet):
     def ministerial_servants_per_congregation(self, congregation):
         return self.filter(congregation=congregation).filter(privilege=1)
 
+    def elders_and_ministerial_servants_per_congregation(self, congregation):
+        return self.filter(congregation=congregation).filter(models.Q(privilege=0) | models.Q(privilege=1))
+
     def watchtower_readers_per_congregation(self, congregation):
         return self.filter(congregation=congregation).filter(watchtower_reader=True)
 
@@ -46,7 +49,10 @@ class PersonQuerySet(models.QuerySet):
         return self.filter(congregation=congregation).filter(midweek_meeting_president=True)
 
     def student_parts_per_congregation(self, congregation):
-        return self.filter(congregation=congregation).filter(student_parts=True)
+        return self.filter(congregation=congregation).filter(student_parts=True).filter(privilege=2)
+
+    def men_student_parts_per_congregation(self, congregation):
+        return self.filter(congregation=congregation).filter(gender=0).filter(student_parts=True).filter(privilege=2)
 
 
 #PeriodManager = models.Manager.from_queryset(PeriodQuerySet)

@@ -150,6 +150,11 @@ class Meeting(models.Model):
 
     type = models.IntegerField(choices=MEETING_TYPE, default=MIDWEEK, verbose_name='Tipo de Reunião')
     date = models.DateField(verbose_name='Data')
+    week = models.CharField(max_length=30, null=True, verbose_name='Semana')
+    weekly_reading = models.CharField(max_length=30, null=True, verbose_name='Leitura Semanal')
+    initial_song = models.CharField(max_length=30, null=True, verbose_name='Cântico inicial')
+    middle_song = models.CharField(max_length=30, null=True, verbose_name='Cântico do meio')
+    final_song = models.CharField(max_length=30, null=True, verbose_name='Cântico final')
     president = models.ForeignKey(Person, on_delete=models.PROTECT, null=True, verbose_name='Presidente')
     indicator_1 = models.ForeignKey(Person, on_delete=models.PROTECT, null=True, related_name='+', verbose_name='Indicador 1')
     indicator_2 = models.ForeignKey(Person, on_delete=models.PROTECT, null=True, related_name='+', verbose_name='Indicador 2')
@@ -162,8 +167,9 @@ class Meeting(models.Model):
     # as partes (relação ManyToMany) foram definidas na classe Parts
 
     # atributos específicos de reunião de fim de semana
-    ruling_watchtower = models.ForeignKey(Person, on_delete=models.PROTECT, null=True, related_name='+', verbose_name='Dirigente de A Sentinela')
-    reader_watchtower = models.ForeignKey(Person, on_delete=models.PROTECT, null=True, related_name='+', verbose_name='Leitor de A Sentinela')
+    watchtower_ruling = models.ForeignKey(Person, on_delete=models.PROTECT, null=True, related_name='+', verbose_name='Dirigente de A Sentinela')
+    watchtower_reader = models.ForeignKey(Person, on_delete=models.PROTECT, null=True, related_name='+', verbose_name='Leitor de A Sentinela')
+    #reader_bible_study = models.ForeignKey(Person, on_delete=models.PROTECT, null=True, related_name='+', verbose_name='Leitor do Estudo Bíblico')
     public_assignment = models.ForeignKey(PublicAssignment, on_delete=models.CASCADE, null=True, verbose_name='Designação Pública')
 
     objects = MeetingQuerySet.as_manager()
@@ -173,6 +179,21 @@ class Meeting(models.Model):
 
     def get_update_url(self):
         return reverse_lazy('mechanical-privileges-update', kwargs={"pk": self.id})
+
+    def get_watchtower_reader_update_url(self):
+        return reverse_lazy('watchtower-reader-update', kwargs={"pk": self.id})
+
+    def is_midweek_meeting(self):
+        return self.type == Meeting.MIDWEEK
+
+    def is_weekend_meeting(self):
+        return self.type == Meeting.WEEKEND
+
+    def set_songs(self, songs):
+        if len(songs) == 3:
+            self.initial_song = songs[0]
+            self.middle_song = songs[1]
+            self.final_song = songs[2]
 
     class Meta:
         verbose_name = 'reunião'

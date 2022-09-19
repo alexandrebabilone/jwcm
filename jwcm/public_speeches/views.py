@@ -6,7 +6,7 @@ from django.shortcuts import render
 from django.urls import reverse_lazy
 from django.contrib.messages.views import SuccessMessageMixin
 from django.db.models.deletion import ProtectedError
-from jwcm.core.models import PublicAssignment, Meeting
+from jwcm.core.models import PublicAssignment, Meeting, Person
 from jwcm.public_speeches.models import Speech
 from jwcm.public_speeches.forms import PublicAssignmentForm, CongregationGuestPopUpForm, PersonGuestForm
 
@@ -65,6 +65,20 @@ class PublicAssignmentList(ListView):
 class SpeechList(ListView):
     template_name = 'public_speeches/list_speech.html'
     model = Speech
+
+
+class WatchtowerReadertList(ListView):
+    template_name = 'public_speeches/list_watchtower_reader.html'
+    model = Meeting
+
+    def get_queryset(self):
+        self.object_list = Meeting.objects.weekend_meetings_per_congregation(congregation=self.request.user.profile.congregation)
+        return self.object_list
+
+    def get_context_data(self, *args, **kwargs):
+        context = super().get_context_data(*args, **kwargs)
+        context['title'] = 'Lista de Leitores de A Sentinela'
+        return context
 #******************** UPDATE ********************#
 class SpeechUpdate(SuccessMessageMixin, UpdateView):
     model = Speech
@@ -79,6 +93,29 @@ class SpeechUpdate(SuccessMessageMixin, UpdateView):
         context['title'] = 'Atualizar Discurso'
         context['button'] = 'Salvar'
         return context
+
+
+class WatchtowerReaderUpdate(SuccessMessageMixin, UpdateView):
+    model = Meeting
+    template_name = 'public_speeches/form.html'
+    fields = ['date', 'watchtower_reader']
+    success_url = reverse_lazy('watchtower-reader-list')
+    success_message = "O leitor de A Sentinela foi definido com sucesso." #%(watchtower_reader)
+    #TODO: tive problemas pra referenciar os atribuitos dessa classe
+
+
+    def get_context_data(self, *args, **kwargs):
+        context = super().get_context_data(*args, **kwargs)
+        context['title'] = 'Definir Leitor de A Sentinela'
+        context['button'] = 'Salvar'
+        return context
+
+    def get_form(self, *args, **kwargs):
+        form = super().get_form(*args, **kwargs)
+        congregation = self.request.user.profile.congregation
+        form.fields['date'].disabled = True
+        form.fields['watchtower_reader'].queryset = Person.objects.watchtower_readers_per_congregation(congregation)
+        return form
 
 
 def public_assignment_update(request, pk):

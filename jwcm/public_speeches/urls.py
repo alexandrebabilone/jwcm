@@ -17,7 +17,7 @@ from django.urls import path
 
 from jwcm.public_speeches.views import SpeechList, SpeechCreate, SpeechUpdate, SpeechDelete, PublicAssignmentList, \
     public_assignment_create, public_assignment_update, PublicAssignmentDelete, person_guest_create, \
-    congregation_guest_pop_up_create
+    congregation_guest_pop_up_create, WatchtowerReadertList, WatchtowerReaderUpdate
 
 urlpatterns = [
     path('speech/', SpeechList.as_view(), name='speech-list'),
@@ -32,4 +32,7 @@ urlpatterns = [
 
     path('person_guest/create/', person_guest_create, name ='person-guest-create'),
     path('congregation_guest/create/', congregation_guest_pop_up_create, name ='congregation-guest-create'),
+
+    path('watchtower_reader/', WatchtowerReadertList.as_view(), name='watchtower-reader-list'),
+    path('watchtower_reader/update/<int:pk>/', WatchtowerReaderUpdate.as_view(), name='watchtower-reader-update'),
 ]

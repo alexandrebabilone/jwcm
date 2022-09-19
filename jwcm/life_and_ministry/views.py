@@ -7,7 +7,7 @@ from django.urls import reverse_lazy
 from django.contrib.messages.views import SuccessMessageMixin
 from django.views.generic import UpdateView, ListView
 from jwcm.life_and_ministry.models import Part, LifeAndMinistryAssignment
-from jwcm.core.models import Meeting
+from jwcm.core.models import Meeting, Person
 
 
 # tempo total sem thread: >>>> 92.3322856426239 segundos
@@ -37,22 +37,31 @@ def _verify_midweek_meetings(congregation):
 
 #TODO erro em produção: reunião duplicada sendo criada. DETAIL:  Key (date, congregation_id)=(2022-09-28, 1) already exists.
 def _parts_scraping(initial_date, num_of_weeks, congregation):
-    not_parts = "Cântico \d{1,3}", "Comentários iniciais", "Comentários finais"
+    not_parts = "Comentários iniciais", "Comentários finais"
+    songs_regex = "Cântico \d{1,3}"
     start_time = time.time()
 
     for _ in range(num_of_weeks):
-        new_meeting = Meeting.objects.create(date=initial_date, congregation=congregation, type=Meeting.MIDWEEK)
-
         num_year, num_week, num_day = initial_date.isocalendar()
         base_url = 'https://wol.jw.org/pt/wol/meetings/r5/lp-t/{}/{}'
         base_url = base_url.format(num_year, num_week)
         html_file = requests.get(base_url).content
         data = BeautifulSoup(html_file, 'html.parser')
+        week = data.find(id='p1').text.replace(u'\xa0', u' ')
+        weekly_reading = data.find(id='p2').text.replace(u'\xa0', u' ')
+        songs_meeting = []
+
+        new_meeting = Meeting.objects.create(date=initial_date, congregation=congregation, type=Meeting.MIDWEEK, week=week, weekly_reading=weekly_reading)
+
         parts = data.find_all("p", class_="so")
 
         for part in parts:
             is_part = True
             theme = part.text.replace(u'\xa0', u' ')
+
+            if re.findall(songs_regex, theme) and len(theme)<30:
+                songs_meeting.append(theme)
+                is_part = False
 
             for not_part in not_parts:
                 if re.findall(not_part, theme):
@@ -68,9 +77,8 @@ def _parts_scraping(initial_date, num_of_weeks, congregation):
             new_part = Part.objects.create(theme=theme, section=int_section, date=initial_date)
             new_assignment = LifeAndMinistryAssignment.objects.create(owner=None, assistant=None, part=new_part)
             new_assignment.meeting.add(new_meeting)
-            print(new_assignment)
 
-
+        new_meeting.set_songs(songs_meeting)
         initial_date += datetime.timedelta(weeks=1)
 
     total_time = time.time() - start_time
@@ -125,9 +133,31 @@ class AssignmentUpdate(SuccessMessageMixin, UpdateView):
         return context
 
     def get_form(self, *args, **kwargs):
+        congregation = self.request.user.profile.congregation
         form = super().get_form(*args, **kwargs)
+        section = form.instance.part.section
+
         form.fields['part'].disabled = True
         form.fields['assistant'].required = False
+
+        #Definir as queries de acordo com as partes
+        if section == Part.TESOUROS_DA_PALAVRA_DE_DEUS:
+            if 'Leitura da Bíblia' in form.instance.part.theme:
+                form.fields['owner'].queryset = Person.objects.men_student_parts_per_congregation(congregation)
+            else:
+                form.fields['owner'].queryset = Person.objects.elders_and_ministerial_servants_per_congregation(congregation)
+        elif section == Part.FACA_SEU_MELHOR_NO_MINISTÉRIO:
+            if 'Vídeo' in form.instance.part.theme:
+                form.fields['owner'].queryset = Person.objects.elders_and_ministerial_servants_per_congregation(congregation)
+            else:
+                form.fields['owner'].queryset = Person.objects.student_parts_per_congregation(congregation)
+                form.fields['assistant'].queryset = Person.objects.student_parts_per_congregation(congregation)
+                form.fields['assistant'].required = True
+        else:
+            form.fields['owner'].queryset = Person.objects.elders_and_ministerial_servants_per_congregation(congregation)
+            form.fields['assistant'].queryset = Person.objects.bible_study_readers_per_congregation(congregation)
+
+
         return form
 
 

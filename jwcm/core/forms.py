@@ -36,3 +36,19 @@ class MeetingMechanicalPrivilegesForm(ModelForm):
     class Meta:
         model = Meeting
         fields = ['date', 'indicator_1', 'indicator_2', 'mic_1', 'mic_2', 'note_sound_table', 'zoom_indicator']
+
+
+class BulletinForm(Form):
+    current_day = datetime.date.today()
+    start_date = forms.DateField(initial=current_day, label='Início', widget=DatePickerInput(format=('%Y-%m-%d'), attrs={}))
+    end_date = forms.DateField(initial=current_day + datetime.timedelta(weeks=1), label='Fim', widget=DatePickerInput(format=('%Y-%m-%d'), attrs={}))
+
+
+    def clean(self):
+        _start = self.cleaned_data.get('start_date')
+        _end = self.cleaned_data.get('end_date')
+
+        if _start >= _end:
+            raise ValidationError('A data final deve ser maior que a data inicial.')
+
+        return self.cleaned_data

@@ -1,46 +1,32 @@
 {% extends "base.html" %}
-{% block title %}Privilégios mecânicos{% endblock %}
+{% block title %}{{title}}{% endblock %}
 
 {% block menu_items %}
-    {% include 'core/menu_items.html' %}
+    {% include 'public_speeches/menu_items.html' %}
 {% endblock %}
 
 {% block content%}
-<h3>Privilégios mecânicos</h3>
+<h3>{{title}}</h3>
+
 <hr>
 
 <div class="table responsive">
-    <table class="table table-striped" id="table-mechanical-privileges">
+    <table class="table table-striped" id="table-watchtower-reader">
         <thead>
-            <tr>
+            <tr>                
                 <th>Data</th>
-                <th>Tipo</th>
-                <th>Presidente</th>
-                <th>Indicador 1</th>
-                <th>Indicador 2</th>
-                <th>Microfone 1</th>
-                <th>Microfone 2</th>
-                <th>Notebook/Mesa de som</th>
-                <th>Indicador Zoom</th>
+                <th>Leitor</th>
                 <th>Opções</th>
             </tr>
         </thead>
 
         <tbody>
             {% for meeting in object_list %}
-            <tr>
+            <tr>                
                 <td> {{ meeting.date|date:"Y/m/d" }} </td>
-                <td> {{ meeting.get_type_display }} </td>
-                <td> {{ meeting.president }} </td>
-                <td> {{ meeting.indicator_1 }} </td>
-                <td> {{ meeting.indicator_2 }} </td>
-                <td> {{ meeting.mic_1 }} </td>
-                <td> {{ meeting.mic_2 }} </td>
-                <td> {{ meeting.note_sound_table }} </td>
-                <td> {{ meeting.zoom_indicator }} </td>
-
+                <td> {{ meeting.watchtower_reader.full_name }} </td>
                 <td>
-                    <a href="{{meeting.get_update_url}}" class="btn btn-warning" title="Editar">
+                    <a href="{{meeting.get_watchtower_reader_update_url}}" class="btn btn-warning" title="Editar">
                         <i class="fas fa-pencil"></i>
                     </a>
                 </td>
@@ -55,14 +41,13 @@
 </div>
 {% endblock%}
 
-
 {% block scripts %}
 <script>
     $(document).ready(function () {
-        $('#table-mechanical-privileges').DataTable({
+        $('#table-watchtower-reader').DataTable({
             responsive: true,
             // "bSort": false,
-            "aaSorting": [[0, "asc"]],
+            "aaSorting": [[0, "desc"]],
             "pageLength": 50,
             "language": {
                 "decimal": "",
