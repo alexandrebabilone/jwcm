@@ -36,6 +36,7 @@ def _verify_midweek_meetings(congregation):
         _parts_scraping(initial_date, NUM_WEEKS_FIRST, congregation)
 
 #TODO erro em produção: reunião duplicada sendo criada. DETAIL:  Key (date, congregation_id)=(2022-09-28, 1) already exists.
+#TODO criação das parts em nova congregação
 def _parts_scraping(initial_date, num_of_weeks, congregation):
     not_parts = "Comentários iniciais", "Comentários finais"
     songs_regex = "Cântico \d{1,3}"
@@ -98,6 +99,14 @@ class PartListView(ListView):
 class AssignmentListView(ListView):
     template_name = 'life_and_ministry/list_assignment.html'
     model = LifeAndMinistryAssignment
+
+    def get_queryset(self):
+        list_assignments = []
+        meetings = Meeting.objects.filter(congregation=self.request.user.profile.congregation).filter(type=Meeting.MIDWEEK)
+        for meeting in meetings:
+            list_assignments.extend(meeting.lifeandministryassignment_set.all())
+        self.object_list = list_assignments
+        return self.object_list
 
 
 class PartUpdate(SuccessMessageMixin, UpdateView):
