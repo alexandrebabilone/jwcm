@@ -2,6 +2,7 @@ from django.db import models
 from django.urls import reverse_lazy
 from jwcm.core.models import Person, Meeting
 from datetime import datetime
+from jwcm.life_and_ministry.managers import PartQuerySet
 
 
 
@@ -19,6 +20,8 @@ class Part(models.Model):
     section = models.IntegerField(choices=SECTION, default=TESOUROS_DA_PALAVRA_DE_DEUS, verbose_name='Seção')
     theme = models.TextField(verbose_name='Tema')
     date = models.DateField(verbose_name='Data', default=datetime.now)
+
+    objects = PartQuerySet.as_manager()
 
     def __str__(self):
         return f'{self.date.strftime("%d/%m/%Y")} - [{self.SECTION[self.section][1]}] - {self.theme}'

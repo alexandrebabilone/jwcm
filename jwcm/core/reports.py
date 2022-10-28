@@ -1,3 +1,5 @@
+import pandas as pd
+import xlsxwriter
 from jwcm.core.models import Meeting
 from jwcm.life_and_ministry.models import Part
 from reportlab.lib.units import cm, mm
@@ -10,13 +12,25 @@ from reportlab.lib.styles import getSampleStyleSheet
 styles = getSampleStyleSheet()
 
 class Report:
-    def __init__(self, start_date, end_date, congregation, simple_doc):
+    def __init__(self, start_date, end_date, congregation, simple_doc, buffer):
         self.report_filename = ''
         self.congregation = congregation
         self.simple_doc = simple_doc
+        self.buffer = buffer
         self.start_date = start_date
         self.end_date = end_date
         self.set_meetings()
+        self.msg_whatsapp = """        
+        *DESIGNAÇÃO PARA A REUNIÃO NOSSA VIDA E MINISTÉRIO CRISTÃO*
+
+        Semana {}
+
+        Nome: {}
+        Ajudante: {}
+        Designação: {}
+
+        *Observação para o estudante*: A lição da brochura _Melhore_ e a fonte de matéria para a sua designação estão na _Apostila da Reunião Vida e Ministério_. Estude a lição da brochura para saber como aplicar o ponto que você vai considerar."""
+        self.msg_whatsapp = '*DESIGNAÇÃO PARA A REUNIÃO NOSSA VIDA E MINISTÉRIO CRISTÃO*\n\nSemana {} \n \nNome: {}\nAjudante: {}\nDesignação: {}\n \n*Observação para o estudante*: A lição da brochura _Melhore_ e a fonte de matéria para a sua designação estão na _Apostila da Reunião Vida e Ministério_. Estude a lição da brochura para saber como aplicar o ponto que você vai considerar.'
 
     def set_meetings(self):
         self.meetings = Meeting.objects.select_range_per_congregation(self.start_date, self.end_date, self.congregation)
@@ -200,67 +214,33 @@ class Report:
         return table_data
 ############################# weekend_meeting_report #############################
 
+#TODO: designações no formato whatsapp
 ############################# student_part_report #############################
-
     def student_parts_report(self):
-        #make_data_students_parts_report(simple_doc, meetings, 'DESIGNAÇÃO PARA A REUNIÃO NOSSA VIDA E MINISTERIO CRISTÃO')
-        self.report_filename = f'student_parts_{self.start_date}_to_{self.end_date}.pdf'
+        self.make_whatsapp_message()
+        self.report_filename = f'student_parts_{self.start_date}_to_{self.end_date}.xlsx'
 
+    def make_whatsapp_message(self):
+        cells_list = []
 
-    def make_data_students_parts_report(self, simple_doc, meetings, title):
-        report_elements = []
+        for meeting in self.meetings:
+            assignments_tesouros = meeting.lifeandministryassignment_set.filter(part__section=Part.TESOUROS_DA_PALAVRA_DE_DEUS)
 
-        simple_doc.title = title
-        report_elements.append(Paragraph(title, styles['Title']))
-        report_elements.append(Spacer(1 * cm, 1 * cm))
+            for assignment in assignments_tesouros:
+                if 'Leitura da Bíblia' in assignment.part.theme:
+                    owner = assignment.owner.full_name if assignment.owner else ''
+                    assistant = assignment.assistant.full_name if assignment.assistant else ''
+                    cells_list.append(self.msg_whatsapp.format(meeting.week, owner, assistant, assignment.part.theme))
 
-        for meeting in meetings:
-            table_data, part_themes = [], []
+            assignments_ministerio = meeting.lifeandministryassignment_set.filter(part__section=Part.FACA_SEU_MELHOR_NO_MINISTÉRIO)
 
-            if meeting.is_weekend_meeting():
-                continue
+            for assignment in assignments_ministerio:
+                owner = assignment.owner.full_name if assignment.owner else ''
+                assistant = assignment.assistant.full_name if assignment.assistant else ''
+                cells_list.append(self.msg_whatsapp.format(meeting.week, owner, assistant, assignment.part.theme))
 
-            assignments_tesouros = meeting.lifeandministryassignment_set.filter(
-                part__section=Part.TESOUROS_DA_PALAVRA_DE_DEUS)
-            assignments_ministerio = meeting.lifeandministryassignment_set.filter(
-                part__section=Part.FACA_SEU_MELHOR_NO_MINISTÉRIO)
-
-            for student_part in assignments_tesouros:
-                if 'Leitura da Bíblia: (4 min)' in student_part.part.theme:
-                    part_themes.append(student_part.part.theme)
-
-            for student_part in assignments_ministerio:
-                part_themes.append(student_part.part.theme)
-
-            for theme in part_themes:
-                table_data.append([f'Data: {meeting.week}'])
-                table_data.append([f'Designação: {theme}'])
-                table_data.append([f''])
-                table_data.append([f'Observação para o estudante: A lição da brochura Melhore e a fonte de materia para a sua designação estão na Apostila da Reuniao Vida e Ministerio. '
-                                   'Estude a lição da brochura para saber como aplicar o ponto que voce vai considerar.'])
-
-
-            table = Table(table_data, colWidths=(160 * mm))
-            report_elements.append(table)
-            report_elements.append(PageBreak())
-
-        simple_doc.build(report_elements)
-
-
-    def _populate_student_pars(self, assignments, table_data):
-        owner, assistant = '', ''
-
-        for assignment in assignments:
-            if assignment.owner:
-                owner = assignment.owner.full_name
-
-            table_data.append(f'Nome: {owner}')
-
-            if assignment.assistant:
-                assistant = assignment.assistant.full_name
-
-            table_data.append(f'Ajudante: {assistant}')
-
-            p = Paragraph(assignment.part.theme, styles["BodyText"])
-            table_data.append([p, 'people'])
+        df = pd.DataFrame(cells_list, columns=['Mensagem Whatsapp'])
+        writer = pd.ExcelWriter(self.buffer, engine='xlsxwriter')
+        df.to_excel(writer)
+        writer.save()
 ############################# student_part_report #############################

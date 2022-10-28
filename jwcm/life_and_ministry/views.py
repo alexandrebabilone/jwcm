@@ -7,83 +7,7 @@ from django.urls import reverse_lazy
 from django.contrib.messages.views import SuccessMessageMixin
 from django.views.generic import UpdateView, ListView
 from jwcm.life_and_ministry.models import Part, LifeAndMinistryAssignment
-from jwcm.core.models import Meeting, Person
-
-
-# tempo total sem thread: >>>> 92.3322856426239 segundos
-# tempo total com thread: >>>>  segundos
-def _verify_midweek_meetings(congregation):
-    """
-    O objetivo dessa função é puxar as partes do site, e a partir delas criar as reuniões de meio de semana.
-    """
-    NUM_WEEKS_FIRST = 20
-    NUM_WEEKS_AFTER = 10
-
-    midweek_day = congregation.midweek_meeting_day
-    current_date = datetime.date.today()
-    objects_parts = Part.objects.order_by('-date')
-
-    # caso existam registros no banco com menos de 45 dias, procura as partes a partir da semana seguinte à última
-    if objects_parts:
-        last_part_date = objects_parts[0].date
-
-        if (last_part_date - current_date).days < 45:
-            initial_date = last_part_date + datetime.timedelta(weeks=1)
-            _parts_scraping(initial_date, NUM_WEEKS_AFTER, congregation)
-    # se não houver registros no banco, procura as partes a partir da semana atual
-    else:
-        initial_date = _get_first_midweek_meeting_day_of_month(current_date, midweek_day)
-        _parts_scraping(initial_date, NUM_WEEKS_FIRST, congregation)
-
-#TODO erro em produção: reunião duplicada sendo criada. DETAIL:  Key (date, congregation_id)=(2022-09-28, 1) already exists.
-#TODO criação das parts em nova congregação
-def _parts_scraping(initial_date, num_of_weeks, congregation):
-    not_parts = "Comentários iniciais", "Comentários finais"
-    songs_regex = "Cântico \d{1,3}"
-    start_time = time.time()
-
-    for _ in range(num_of_weeks):
-        num_year, num_week, num_day = initial_date.isocalendar()
-        base_url = 'https://wol.jw.org/pt/wol/meetings/r5/lp-t/{}/{}'
-        base_url = base_url.format(num_year, num_week)
-        html_file = requests.get(base_url).content
-        data = BeautifulSoup(html_file, 'html.parser')
-        week = data.find(id='p1').text.replace(u'\xa0', u' ')
-        weekly_reading = data.find(id='p2').text.replace(u'\xa0', u' ')
-        songs_meeting = []
-
-        new_meeting = Meeting.objects.create(date=initial_date, congregation=congregation, type=Meeting.MIDWEEK, week=week, weekly_reading=weekly_reading)
-
-        parts = data.find_all("p", class_="so")
-
-        for part in parts:
-            is_part = True
-            theme = part.text.replace(u'\xa0', u' ')
-
-            if re.findall(songs_regex, theme) and len(theme)<30:
-                songs_meeting.append(theme)
-                is_part = False
-
-            for not_part in not_parts:
-                if re.findall(not_part, theme):
-                    is_part = False
-                    break
-
-            if not is_part:
-                continue
-
-            str_section = part.find_previous("h2").text
-
-            int_section = _set_section(str_section)
-            new_part = Part.objects.create(theme=theme, section=int_section, date=initial_date)
-            new_assignment = LifeAndMinistryAssignment.objects.create(owner=None, assistant=None, part=new_part)
-            new_assignment.meeting.add(new_meeting)
-
-        new_meeting.set_songs(songs_meeting)
-        initial_date += datetime.timedelta(weeks=1)
-
-    total_time = time.time() - start_time
-    print(f' ---------->>>> {total_time}')
+from jwcm.core.models import Meeting, Person, Congregation
 
 
 class PartListView(ListView):
@@ -92,8 +16,108 @@ class PartListView(ListView):
 
     def get_context_data(self, *args, **kwargs):
         context = super().get_context_data(*args, **kwargs)
-        _verify_midweek_meetings(self.request.user.profile.congregation)
+        self.verify_parts()
+        self.verify_midweek_meetings(self.request.user.profile.congregation)
         return context
+
+    def verify_parts(self):
+        """
+        O objetivo dessa função é verificar a necessidade de puxar/criar as partes (Part).
+        Se é a primeira vez que vamos puxar as partes, procuramos as próximas 20 partes a partir da semana atual.
+        Senão,
+        """
+        NUM_WEEKS_FIRST = 20
+        NUM_WEEKS_AFTER = 10
+
+        objects_parts = Part.objects.sorted_by_date_desc()
+        current_date = datetime.date.today()
+
+        if not objects_parts:
+            date_of_first_day_of_week = _get_date_of_first_day_of_week(current_date)
+            self.parts_scraping(date_of_first_day_of_week, NUM_WEEKS_FIRST)
+        else:
+            last_part_date = objects_parts[0].date
+
+            if (last_part_date - current_date).days < 45:
+                next_week = last_part_date + datetime.timedelta(weeks=1)
+                self.parts_scraping(next_week, NUM_WEEKS_AFTER)
+
+    # tempo total sem thread: >>>> 92.3322856426239 segundos
+    # tempo total com thread: >>>>  segundos
+    # TODO erro em produção: reunião duplicada sendo criada. DETAIL:  Key (date, congregation_id)=(2022-09-28, 1) already exists.
+    # TODO criação das parts em nova congregação - as parts ja existem, as reunioes nao
+    def parts_scraping(self, initial_date, num_of_weeks):
+        """
+        O objetivo dessa função é puxar as partes do site e armazenar no banco.
+        """
+        not_parts = "Comentários iniciais", "Comentários finais", "Cântico \d{1,3}"
+        part_list = []
+
+        for _ in range(num_of_weeks):
+            num_year, num_week, num_day = initial_date.isocalendar()
+            base_url = 'https://wol.jw.org/pt/wol/meetings/r5/lp-t/{}/{}'
+            base_url = base_url.format(num_year, num_week)
+            html_file = requests.get(base_url).content
+            data = BeautifulSoup(html_file, 'html.parser')
+
+            # Se a busca esta sendo feita em uma semana que ainda não existe programação, aborta a busca
+            if data.find(id='p1') and data.find(id='p2'):
+
+                parts = data.find_all("p", class_="so")
+
+                for part in parts:
+                    is_part = True
+                    theme = part.text.replace(u'\xa0', u' ')
+
+                    for not_part in not_parts:
+                        if re.findall(not_part, theme):
+                            is_part = False
+                            break
+
+                    if not is_part:
+                        continue
+
+                    str_section = part.find_previous("h2").text
+                    int_section = _set_section(str_section)
+                    new_part = Part(theme=theme, section=int_section, date=initial_date)
+                    part_list.append(new_part)
+
+            initial_date += datetime.timedelta(weeks=1)
+
+        Part.objects.bulk_create(part_list)
+
+
+    def verify_midweek_meetings(self, congregation):
+        parts = Part.objects.sorted_by_date_desc()
+
+        part_dates = Part.objects.part_dates()
+        if not part_dates:
+            return
+
+        midweek_meetings = Meeting.objects.midweek_meetings_per_congregation_desc(congregation)
+        if midweek_meetings:
+            len_part_dates = len(part_dates)
+            len_midweek_meetings = len(midweek_meetings)
+
+            if len_part_dates > len_midweek_meetings:
+                self.create_meetings_and_assignments(part_dates[:(len_part_dates-len_midweek_meetings)], parts, congregation)
+        else:
+            self.create_meetings_and_assignments(part_dates, parts, congregation)
+
+
+    def create_meetings_and_assignments(self, list_of_dates, parts, congregation):
+        for date in list_of_dates:
+            # TODO: maneira mais elegante de pegar as datas
+            meeting_date = _get_midweek_meeting_day_of_week(date['date'], congregation.midweek_meeting_day)
+            new_meeting = Meeting.objects.create(date=meeting_date, congregation=congregation,
+                                                 type=Meeting.MIDWEEK)  # , week=week, weekly_reading=weekly_reading
+
+            filtered_parts = filter(lambda part: part.date == date['date'], parts)
+            filtered_parts = list(filtered_parts)
+
+            for part in filtered_parts:
+                new_assignment = LifeAndMinistryAssignment.objects.create(owner=None, assistant=None, part=part)
+                new_assignment.meeting.add(new_meeting)
 
 
 class AssignmentListView(ListView):
@@ -102,7 +126,8 @@ class AssignmentListView(ListView):
 
     def get_queryset(self):
         list_assignments = []
-        meetings = Meeting.objects.filter(congregation=self.request.user.profile.congregation).filter(type=Meeting.MIDWEEK)
+        meetings = Meeting.objects.midweek_meetings_per_congregation_desc(self.request.user.profile.congregation)
+
         for meeting in meetings:
             list_assignments.extend(meeting.lifeandministryassignment_set.all())
         self.object_list = list_assignments
@@ -158,6 +183,8 @@ class AssignmentUpdate(SuccessMessageMixin, UpdateView):
         elif section == Part.FACA_SEU_MELHOR_NO_MINISTÉRIO:
             if 'Vídeo' in form.instance.part.theme:
                 form.fields['owner'].queryset = Person.objects.elders_and_ministerial_servants_per_congregation(congregation)
+            elif 'Discurso:' in form.instance.part.theme:
+                form.fields['owner'].queryset = Person.objects.men_student_parts_per_congregation(congregation)
             else:
                 form.fields['owner'].queryset = Person.objects.student_parts_per_congregation(congregation)
                 form.fields['assistant'].queryset = Person.objects.student_parts_per_congregation(congregation)
@@ -190,3 +217,17 @@ def _get_first_midweek_meeting_day_of_month(some_date, midweek_day):
         first_midweek_meeting_day_of_month -= datetime.timedelta(days=1)
 
     return first_midweek_meeting_day_of_month
+
+
+def _get_date_of_first_day_of_week(some_date):
+    while some_date.weekday() != 0: #0 representa segunda-feira
+        some_date -= datetime.timedelta(days=1)
+
+    return some_date
+
+
+def _get_midweek_meeting_day_of_week(some_date, midweek_meeting_day):
+    while some_date.weekday() != midweek_meeting_day:
+        some_date += datetime.timedelta(days=1)
+
+    return some_date

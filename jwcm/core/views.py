@@ -23,7 +23,6 @@ styles = getSampleStyleSheet()
 def home(request):
     template_name = 'home.html'
     _verify_weekend_meetings(request.user.profile.congregation)
-
     return render(request, template_name)
 
 
@@ -160,7 +159,7 @@ class MechanicalPrivilegesListView(ListView):
     model = Meeting
 
     def get_queryset(self):
-        self.object_list = Meeting.objects.meetings_per_congregation(congregation=self.request.user.profile.congregation)
+        self.object_list = Meeting.objects.meetings_per_congregation_asc(congregation=self.request.user.profile.congregation)
         return self.object_list
 
 
@@ -305,8 +304,7 @@ class BulletinBoardView(FormView):
 
         buffer = io.BytesIO()
         simple_doc = SimpleDocTemplate(buffer, pagesize=letter, bottomup=0)
-
-        reports = Report(start_date, end_date, self.request.user.profile.congregation, simple_doc)
+        reports = Report(start_date, end_date, self.request.user.profile.congregation, simple_doc, buffer)
 
         if 'mechanical_privileges' in request.POST:
             reports.mechanical_privileges_report()

@@ -2,7 +2,7 @@ from django.db.models import Q, UniqueConstraint
 from django.db import models
 from datetime import time
 from django.urls import reverse_lazy
-from jwcm.core.managers import PersonQuerySet, MeetingQuerySet
+from jwcm.core.managers import PersonQuerySet, MeetingQuerySet, CongregationQuerySet
 from jwcm.public_speeches.models import Speech
 
 
@@ -37,6 +37,8 @@ class Congregation(models.Model):
                                               verbose_name='Dia da reunião de fim de semana', null=True)
     host = models.BooleanField(default=False, verbose_name='Congregação Anfitriã')
     random_key = models.CharField(max_length=50, unique=True, null=True)
+
+    objects = CongregationQuerySet.as_manager()
 
 
     def __str__(self):

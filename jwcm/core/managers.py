@@ -1,6 +1,12 @@
 from django.db import models
 #como importar os choices se nao posso importar a classe Person?
 
+
+class CongregationQuerySet(models.QuerySet):
+    def select_host_congregations(self):
+        return self.filter(host=True)
+
+
 class MeetingQuerySet(models.QuerySet):
     def select_range_per_congregation(self, start_date, end_date, congregation):
         return self.filter(congregation=congregation).filter(date__gte=start_date).filter(date__lte=end_date).order_by('date')
@@ -8,8 +14,11 @@ class MeetingQuerySet(models.QuerySet):
     def weekend_meetings_per_congregation(self, congregation):
         return self.filter(congregation=congregation).filter(type=1).order_by('date')
 
-    def meetings_per_congregation(self, congregation):
+    def meetings_per_congregation_asc(self, congregation):
         return self.filter(congregation=congregation).order_by('date')
+
+    def midweek_meetings_per_congregation_desc(self, congregation):
+        return self.filter(congregation=congregation).filter(type=0).order_by('-date')
 
     def select_range_weekend_meetings_per_congregation(self, congregation, start_date, end_date):
         return self.filter(congregation=congregation).filter(date__gte=start_date).filter(date__lte=end_date).order_by('date')
