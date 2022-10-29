@@ -119,7 +119,7 @@ class PersonUpdate(SuccessMessageMixin, UpdateView):
 class MechanicalPrivilegesUpdateView(SuccessMessageMixin, UpdateView):
     model = Meeting
     template_name = 'core/form.html'
-    fields = ['date', 'president', 'indicator_1', 'indicator_2', 'mic_1', 'mic_2', 'note_sound_table', 'zoom_indicator']
+    fields = ['date', 'president', 'indicator_1', 'indicator_2', 'mic_1', 'mic_2', 'note_sound_table']
     success_url = reverse_lazy('mechanical-privileges-list')
     success_message = "Os privilégios da reunião de %(date)s foram alterados com sucesso."
 
@@ -138,10 +138,7 @@ class MechanicalPrivilegesUpdateView(SuccessMessageMixin, UpdateView):
         form.fields['indicator_2'].queryset = form.fields['indicator_1'].queryset
         form.fields['mic_1'].queryset = Person.objects.mics_per_congregation(user_congregation)
         form.fields['mic_2'].queryset = form.fields['mic_1'].queryset
-        form.fields['note_sound_table'].queryset = Person.objects.note_sound_tables_per_congregation(
-            user_congregation)
-        form.fields['zoom_indicator'].queryset = Person.objects.zoom_indicators_per_congregation(
-            user_congregation)
+        form.fields['note_sound_table'].queryset = Person.objects.note_sound_tables_per_congregation(user_congregation)
 
         return form
 #******************** LIST ********************#

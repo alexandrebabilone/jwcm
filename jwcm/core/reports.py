@@ -19,18 +19,8 @@ class Report:
         self.buffer = buffer
         self.start_date = start_date
         self.end_date = end_date
-        self.set_meetings()
-        self.msg_whatsapp = """        
-        *DESIGNAÇÃO PARA A REUNIÃO NOSSA VIDA E MINISTÉRIO CRISTÃO*
-
-        Semana {}
-
-        Nome: {}
-        Ajudante: {}
-        Designação: {}
-
-        *Observação para o estudante*: A lição da brochura _Melhore_ e a fonte de matéria para a sua designação estão na _Apostila da Reunião Vida e Ministério_. Estude a lição da brochura para saber como aplicar o ponto que você vai considerar."""
         self.msg_whatsapp = '*DESIGNAÇÃO PARA A REUNIÃO NOSSA VIDA E MINISTÉRIO CRISTÃO*\n\nSemana {} \n \nNome: {}\nAjudante: {}\nDesignação: {}\n \n*Observação para o estudante*: A lição da brochura _Melhore_ e a fonte de matéria para a sua designação estão na _Apostila da Reunião Vida e Ministério_. Estude a lição da brochura para saber como aplicar o ponto que você vai considerar.'
+        self.set_meetings()
 
     def set_meetings(self):
         self.meetings = Meeting.objects.select_range_per_congregation(self.start_date, self.end_date, self.congregation)
@@ -63,12 +53,9 @@ class Report:
             if meeting.note_sound_table:
                 note = meeting.note_sound_table.full_name
 
-            if meeting.zoom_indicator:
-                zoom_indicator = meeting.zoom_indicator.full_name
-
             table_data.append([meeting.date.strftime("%d/%m/%Y"), f'{indicator_1} e {indicator_2}',
                                f'{mic_1} e {mic_2}',
-                               f'{note} e {zoom_indicator}'])
+                               f'{note}'])
 
         return table_data
 
