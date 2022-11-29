@@ -5,4 +5,5 @@ from jwcm.lpw.views import PersonAvailabilityUpdate, CongregationAvailabilityUpd
 urlpatterns = [
     path('person/update/<int:pk>/', PersonAvailabilityUpdate.as_view(), name='lpw-person-update'),
     path('congregation/update/<int:pk>/', CongregationAvailabilityUpdate.as_view(), name='lpw-congregation-update'),
+    path('monthly/', CongregationAvailabilityUpdate.as_view(), name='lpw-monthly'),
 ]

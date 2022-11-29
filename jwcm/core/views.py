@@ -1,25 +1,18 @@
-from django.forms import ModelForm, formset_factory, modelformset_factory
 from django.views.generic import TemplateView, UpdateView, ListView, CreateView, DeleteView, FormView
-from django.http import HttpResponse, HttpResponseRedirect, FileResponse
-from django.views import View
-from jwcm.core.forms import BatchPersonForm, BulletinForm, MechanicalPrivilegesForm
-from django.shortcuts import get_object_or_404, render, resolve_url as r
+from django.http import HttpResponse, HttpResponseRedirect
+from jwcm.core.forms import BatchPersonForm
+from django.shortcuts import render, resolve_url as r
 from django.urls import reverse_lazy
 from django.contrib import messages
 from jwcm.core.models import Congregation, Person, Meeting, PublicAssignment
-from jwcm.lpw.models import PersonAvailability, CongregationAvailability
+from jwcm.lpw.models import PersonAvailability
 from django.contrib.messages.views import SuccessMessageMixin
 import pandas as pd
 import datetime
-import io
-from jwcm.core.reports import Report
-from reportlab.lib.pagesizes import letter
-from reportlab.platypus import SimpleDocTemplate
-from reportlab.lib.styles import getSampleStyleSheet
 from jwcm.core.batch import batch_read_and_create_person
 
 
-styles = getSampleStyleSheet()
+
 
 def home(request):
     template_name = 'home.html'
@@ -226,41 +219,6 @@ def _get_first_weekend_meeting_day_of_month(some_date, weekend_day):
         first_weekend_meeting_day_of_month += datetime.timedelta(days=1)
 
     return first_weekend_meeting_day_of_month
-#******************** REPORTS ********************#
-class BulletinBoardView(FormView):
-    template_name = 'core/bulletin_board.html'
-    form_class = BulletinForm
-
-    def get_context_data(self, *args, **kwargs):
-        context = super().get_context_data(*args, **kwargs)
-        context['button_mechanical_privileges'] = 'Privilégios mecânicos'
-        context['button_student_parts'] = 'Partes de estudante'
-        context['button_midweek_meeting'] = 'Reunião de meio de semana'
-        context['button_weekend_meeting'] = 'Reunião de fim de semana'
-        context['title'] = 'Relatórios'
-        return context
-
-
-    def post(self, request, *args, **kwargs):
-        start_date = request.POST.get('start_date')
-        end_date = request.POST.get('end_date')
-
-        buffer = io.BytesIO()
-        simple_doc = SimpleDocTemplate(buffer, pagesize=letter, bottomup=0)
-        reports = Report(start_date, end_date, self.request.user.profile.congregation, simple_doc, buffer)
-
-        if 'mechanical_privileges' in request.POST:
-            reports.mechanical_privileges_report()
-        elif 'student_parts' in request.POST:
-            reports.student_parts_report()
-        elif 'midweek_meeting' in request.POST:
-            reports.midweek_meeting_report()
-        else:
-            reports.weekend_meeting_report()
-
-        buffer.seek(0)
-        return FileResponse(buffer, as_attachment=True, filename=reports.report_filename)
-
 """
 def mechanical_TODO(request):
     form = MechanicalPrivilegesForm(request.POST or None)

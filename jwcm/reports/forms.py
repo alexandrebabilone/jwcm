@@ -1,25 +1,16 @@
 from django import forms
 from django.core.exceptions import ValidationError
-from jwcm.core.models import Congregation
 from jwcm.core.widget import DatePickerInput
 import datetime
-from django.forms import Form, ModelForm
+from django.forms import Form
 
 
-class CongregationForm(ModelForm):
-    class Meta:
-        model = Congregation
-        fields = ['name', 'number', 'midweek_meeting_time', 'weekend_meeting_time', 'midweek_meeting_day', 'weekend_meeting_day']
 
-
-class BatchPersonForm(Form):
-    file = forms.FileField(label='Arquivo')
-
-
-class MechanicalPrivilegesForm(Form):
+class ReportsForm(Form):
     current_day = datetime.date.today()
     start_date = forms.DateField(initial=current_day, label='Início', widget=DatePickerInput(format=('%Y-%m-%d'), attrs={}))
-    end_date = forms.DateField(initial=current_day + datetime.timedelta(weeks=10), label='Fim', widget=DatePickerInput(format=('%Y-%m-%d'), attrs={}))
+    end_date = forms.DateField(initial=current_day + datetime.timedelta(weeks=1), label='Fim', widget=DatePickerInput(format=('%Y-%m-%d'), attrs={}))
+
 
     def clean(self):
         _start = self.cleaned_data.get('start_date')
