@@ -201,7 +201,7 @@ class Report:
         return table_data
 ############################# weekend_meeting_report #############################
 
-#TODO: designações no formato whatsapp
+
 ############################# student_part_report #############################
     def student_parts_report(self):
         self.make_whatsapp_message()

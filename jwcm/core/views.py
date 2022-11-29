@@ -2,11 +2,12 @@ from django.forms import ModelForm, formset_factory, modelformset_factory
 from django.views.generic import TemplateView, UpdateView, ListView, CreateView, DeleteView, FormView
 from django.http import HttpResponse, HttpResponseRedirect, FileResponse
 from django.views import View
-from jwcm.core.forms import BatchPersonForm, MechanicalPrivileges, MeetingMechanicalPrivilegesForm, BulletinForm
+from jwcm.core.forms import BatchPersonForm, BulletinForm, MechanicalPrivilegesForm
 from django.shortcuts import get_object_or_404, render, resolve_url as r
 from django.urls import reverse_lazy
 from django.contrib import messages
 from jwcm.core.models import Congregation, Person, Meeting, PublicAssignment
+from jwcm.lpw.models import PersonAvailability, CongregationAvailability
 from django.contrib.messages.views import SuccessMessageMixin
 import pandas as pd
 import datetime
@@ -70,9 +71,8 @@ class PersonCreate(SuccessMessageMixin, CreateView):
     template_name = 'core/form.html'
     fields = ['full_name', 'telephone', 'gender', 'student_parts', 'privilege', 'modality', 'watchtower_reader',
               'bible_study_reader', 'weekend_meeting_president', 'midweek_meeting_president',
-              'indicator', 'mic', 'note_sound_table', 'zoom_indicator']
+              'indicator', 'mic', 'note_sound_table']
     success_url = reverse_lazy('person-list')
-    success_message = "%(full_name)s foi registrado com sucesso."
 
 
     def get_context_data(self, *args, **kwargs):
@@ -85,9 +85,14 @@ class PersonCreate(SuccessMessageMixin, CreateView):
         # antes do "super" o objeto não foi criado nem salvo no banco
         form.instance.congregation = self.request.user.profile.congregation
         return super().form_valid(form)
+
+    def get_success_message(self, cleaned_data):
+        #após salvar o objeto no banco, crio o objeto relacionado à ele
+        personavailability = PersonAvailability.objects.create(lpw=self.object)
+        return f'O publicador {self.object.full_name} foi registrado com sucesso.'
 #******************** UPDATE ********************#
 class CongregationUpdate(SuccessMessageMixin, UpdateView):
-    template_name = 'core/form.html'
+    template_name = 'core/congregation_update.html'
     model = Congregation
     fields = ['name', 'number', 'midweek_meeting_day', 'midweek_meeting_time', 'weekend_meeting_day', 'weekend_meeting_time']
     success_url = reverse_lazy('home')
@@ -102,10 +107,10 @@ class CongregationUpdate(SuccessMessageMixin, UpdateView):
 
 class PersonUpdate(SuccessMessageMixin, UpdateView):
     model = Person
-    template_name = 'core/form.html'
+    template_name = 'core/person_update.html'
     fields = ['full_name', 'telephone', 'gender', 'student_parts', 'privilege', 'modality', 'watchtower_reader',
               'bible_study_reader', 'weekend_meeting_president', 'midweek_meeting_president',
-              'indicator', 'mic', 'note_sound_table', 'zoom_indicator']
+              'indicator', 'mic', 'note_sound_table']
     success_url = reverse_lazy('person-list')
     success_message = "O registro de %(full_name)s foi alterado com sucesso."
 
@@ -158,65 +163,6 @@ class MechanicalPrivilegesListView(ListView):
     def get_queryset(self):
         self.object_list = Meeting.objects.meetings_per_congregation_asc(congregation=self.request.user.profile.congregation)
         return self.object_list
-
-
-class MechanicalPrivilegesView(View):
-    template_name = 'core/mechanical_privileges.html'
-    form_class = MechanicalPrivileges
-    success_url = reverse_lazy('home')
-    context = {
-        'button_1': 'Buscar',
-        'button_2': 'Designar Automaticamente',
-        'button_3': 'Salvar',
-    }
-
-    def get(self, request, *args, **kwargs):
-        form_search = self.form_class()
-        self.context['form_search'] = form_search
-        return render(request, self.template_name, self.context)
-
-    def post(self, request, *args, **kwargs):
-        form_search = self.form_class(request.POST)
-        user_congregation = request.user.profile.congregation
-
-        if not form_search.is_valid():
-            return render(request, self.template_name, {'form_search': form_search})
-
-        if 'buscar' in request.POST:
-            MeetingFormSet = modelformset_factory(model=Meeting,
-                                                  form=MeetingMechanicalPrivilegesForm,
-                                                  extra=0)
-            meetings_qs = Meeting.objects.select_range_per_congregation(
-                form_search.cleaned_data['start_date'],
-                form_search.cleaned_data['end_date'],
-                congregation=user_congregation)
-
-            formset = MeetingFormSet(queryset=meetings_qs) #request.POST or None,
-
-            for _form in formset:
-                _form.fields['indicator_1'].queryset = Person.objects.indicators_per_congregation(user_congregation)
-                _form.fields['indicator_2'].queryset = _form.fields['indicator_1'].queryset
-                _form.fields['mic_1'].queryset = Person.objects.mics_per_congregation(user_congregation)
-                _form.fields['mic_2'].queryset = _form.fields['mic_1'].queryset
-                _form.fields['note_sound_table'].queryset = Person.objects.note_sound_tables_per_congregation(
-                    user_congregation)
-                _form.fields['zoom_indicator'].queryset = Person.objects.zoom_indicators_per_congregation(
-                    user_congregation)
-
-            self.context['form_search'] = form_search
-            self.context['formset'] = formset
-            #self.context['meetings'] = meetings
-
-            return render(request, self.template_name, self.context)
-
-        if 'salvar' in request.POST:
-            formset = self.context['formset']
-            if not formset.is_valid():
-                return render(request, self.template_name, self.context)
-
-            formset.save()
-            messages.success(request, 'Privilégios designados com sucesso.')
-            return HttpResponseRedirect(r('home'))
 #******************** DELETE ********************#
 class PersonDelete(SuccessMessageMixin, DeleteView):
     template_name = 'core/form_delete.html'
@@ -314,3 +260,21 @@ class BulletinBoardView(FormView):
 
         buffer.seek(0)
         return FileResponse(buffer, as_attachment=True, filename=reports.report_filename)
+
+"""
+def mechanical_TODO(request):
+    form = MechanicalPrivilegesForm(request.POST or None)
+    template_name = 'core/mechanical_todo.html'
+    congregation = request.user.profile.congregation
+    meetings = []
+
+
+    if request.method == 'POST':
+        start_date = request.POST.get('start_date')
+        end_date = request.POST.get('end_date')
+        meetings = Meeting.objects.select_range_per_congregation(start_date, end_date, congregation)
+
+
+
+    return render(request, template_name, {'form': form, 'button_search': 'Buscar', 'title': 'Privilégios mecânicos', 'meetings': meetings})
+"""

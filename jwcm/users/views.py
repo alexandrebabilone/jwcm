@@ -1,15 +1,15 @@
-from django.shortcuts import render
 from django.core.management.utils import get_random_secret_key
-from django.http import HttpResponse, HttpResponseRedirect
+from django.http import HttpResponseRedirect
 from django.urls import reverse_lazy
 from django.contrib import messages
 from django.contrib.messages.views import SuccessMessageMixin
+from jwcm.lpw.models import CongregationAvailability
 from jwcm.users.forms import UserForm, CongregationChoiceForm
 from django.views.generic import UpdateView
 from jwcm.users.models import Profile
 from jwcm.core.forms import CongregationForm
 from jwcm.core.models import Congregation
-from django.shortcuts import get_object_or_404, render, resolve_url as r
+from django.shortcuts import render, resolve_url as r
 
 
 
@@ -48,6 +48,7 @@ def user_register(request):
                 new_congregation = congregation_form.save()
                 user = user_form.save()
                 profile = Profile.objects.create(congregation=new_congregation, user=user)
+                congregationavailability = CongregationAvailability.objects.create(lpw=new_congregation)
                 messages.success(request, 'Usuário e Congregação cadastrados com sucesso.')
                 return HttpResponseRedirect(r('login'))
             else:

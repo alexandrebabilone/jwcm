@@ -4,6 +4,11 @@
 {% block title %}{{ title }}{% endblock %}
 
 
+{% block menu_items %}
+    {% include 'core/menu_items.html' %}
+{% endblock %}
+
+
 {% block content%}
 <h3>{{ title }}</h3>
 <hr>
@@ -11,17 +16,11 @@
     {% csrf_token %}
     {{ form|crispy }}
 
-    <button type="submit" class="btn btn-info mt-3" name="mechanical_privileges">
-         {{ button_mechanical_privileges }}
-    </button>
-    <button type="submit" class="btn btn-info mt-3" name="student_parts">
-         {{ button_student_parts }}
-    </button>
-    <button type="submit" class="btn btn-info mt-3" name="midweek_meeting">
-         {{ button_midweek_meeting }}
-    </button>
-    <button type="submit" class="btn btn-info mt-3" name="weekend_meeting">
-         {{ button_weekend_meeting }}
+    <a href="{{person.personavailability.get_update_url}}" class="btn btn-warning" title="Disponibilidade TPL">Disponibilidade TPL <i class="fas fa-pencil"></i></a>
+    <br>
+
+    <button type="submit" class="btn btn-success mt-3">
+        <i class="fas fa-check"></i> {{ button }}
     </button>
 </form>
 {% endblock %}

@@ -1,9 +1,11 @@
 <li class="nav-item">
 	<a class="nav-link active" aria-current="page" href="{% url 'public-assignment-list' %}">Arranjo de Oradores</a>
 </li>
+{% if request.user.is_superuser %}
 <li class="nav-item">
 	<a class="nav-link active" aria-current="page" href="{% url 'speech-list' %}">Discursos públicos</a>
 </li>
+{% endif %}
 <li class="nav-item">
 	<a class="nav-link active" aria-current="page" href="{% url 'person-guest-create' %}">Cadastro de Oradores Visitantes</a>
 </li>

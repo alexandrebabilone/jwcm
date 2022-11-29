@@ -25,6 +25,7 @@ urlpatterns = [
     path('public_speeches/', include('jwcm.public_speeches.urls')),
     path('life_and_ministry/', include('jwcm.life_and_ministry.urls')),
     path('users/', include('jwcm.users.urls')),
+    path('lpw/', include('jwcm.lpw.urls')),
 
     path('', home, name='home'),
     path('about/', About.as_view(), name='about'),

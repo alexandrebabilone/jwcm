@@ -49,6 +49,7 @@ INSTALLED_APPS = [
     'jwcm.users',
     'jwcm.public_speeches',
     'jwcm.life_and_ministry',
+    'jwcm.lpw',
 ]
 
 CRISPY_ALLOWED_TEMPLATE_PACKS = 'bootstrap5'

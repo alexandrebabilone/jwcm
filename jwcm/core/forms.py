@@ -1,9 +1,9 @@
 from django import forms
 from django.core.exceptions import ValidationError
-from jwcm.core.models import Congregation, Meeting
+from jwcm.core.models import Congregation
 from jwcm.core.widget import DatePickerInput
 import datetime
-from django.forms import Form, ModelForm, BaseModelFormSet
+from django.forms import Form, ModelForm
 
 
 class CongregationForm(ModelForm):
@@ -16,7 +16,7 @@ class BatchPersonForm(Form):
     file = forms.FileField(label='Arquivo')
 
 
-class MechanicalPrivileges(Form):
+class MechanicalPrivilegesForm(Form):
     current_day = datetime.date.today()
     start_date = forms.DateField(initial=current_day, label='Início', widget=DatePickerInput(format=('%Y-%m-%d'), attrs={}))
     end_date = forms.DateField(initial=current_day + datetime.timedelta(weeks=10), label='Fim', widget=DatePickerInput(format=('%Y-%m-%d'), attrs={}))
@@ -29,13 +29,6 @@ class MechanicalPrivileges(Form):
             raise ValidationError('A data final deve ser maior que a data inicial.')
 
         return self.cleaned_data
-
-
-class MeetingMechanicalPrivilegesForm(ModelForm):
-
-    class Meta:
-        model = Meeting
-        fields = ['date', 'indicator_1', 'indicator_2', 'mic_1', 'mic_2', 'note_sound_table', 'zoom_indicator']
 
 
 class BulletinForm(Form):
