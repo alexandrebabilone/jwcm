@@ -16,13 +16,13 @@ class Congregation(models.Model):
     DOMINGO = 6
 
     DAY_OF_WEEK = (
-        (DOMINGO, 'Domingo'),
         (SEGUNDA, 'Segunda-feira'),
         (TERCA, 'Terça-feira'),
         (QUARTA, 'Quarta-feira'),
         (QUINTA, 'Quinta-feira'),
         (SEXTA, 'Sexta-feira'),
         (SABADO, 'Sábado'),
+        (DOMINGO, 'Domingo'),
     )
 
     name = models.CharField(max_length=50, verbose_name='Nome')
@@ -40,6 +40,9 @@ class Congregation(models.Model):
 
     objects = CongregationQuerySet.as_manager()
 
+
+    def get_lpw_update_url(self):
+        return reverse_lazy("lpw-congregation-update", kwargs={"pk": self.id})
 
     def __str__(self):
         return f'{self.name}'
@@ -98,6 +101,9 @@ class Person(models.Model):
     student_parts = models.BooleanField(default=True, verbose_name='Partes de Estudante')
     congregation = models.ForeignKey(Congregation, on_delete=models.PROTECT, null=True)
 
+    def get_lpw_update_url(self):
+        return reverse_lazy("lpw-person-update", kwargs={"pk": self.id})
+
     def get_update_url(self):
         return reverse_lazy("person-update", kwargs={"pk": self.id})
 
@@ -124,8 +130,8 @@ class Person(models.Model):
 
 
 class PublicAssignment(models.Model):
-    speech = models.ForeignKey(Speech, on_delete=models.PROTECT, null=True, verbose_name='Discurso')
-    speaker = models.ForeignKey(Person, on_delete=models.PROTECT, null=True, verbose_name='Orador')
+    speech = models.ForeignKey(Speech, on_delete=models.PROTECT, null=True, verbose_name='Discurso', blank=True)
+    speaker = models.ForeignKey(Person, on_delete=models.PROTECT, null=True, verbose_name='Orador', blank=True)
 
     def get_update_url(self):
         return reverse_lazy('public-assignment-update', kwargs={"pk": self.id})
@@ -157,14 +163,14 @@ class Meeting(models.Model):
     initial_song = models.CharField(max_length=30, null=True, verbose_name='Cântico inicial')
     middle_song = models.CharField(max_length=30, null=True, verbose_name='Cântico do meio')
     final_song = models.CharField(max_length=30, null=True, verbose_name='Cântico final')
-    president = models.ForeignKey(Person, on_delete=models.PROTECT, null=True, verbose_name='Presidente')
-    indicator_1 = models.ForeignKey(Person, on_delete=models.PROTECT, null=True, related_name='+', verbose_name='Indicador 1')
-    indicator_2 = models.ForeignKey(Person, on_delete=models.PROTECT, null=True, related_name='+', verbose_name='Indicador 2')
-    mic_1 = models.ForeignKey(Person, on_delete=models.PROTECT, null=True, related_name='+', verbose_name='Microfone 1')
-    mic_2 = models.ForeignKey(Person, on_delete=models.PROTECT, null=True, related_name='+', verbose_name='Microfone 2')
-    note_sound_table = models.ForeignKey(Person, on_delete=models.PROTECT, null=True, related_name='audio_video_operator', verbose_name='Notebook/mesa de som')
-    zoom_indicator = models.ForeignKey(Person, on_delete=models.PROTECT, null=True, related_name='audio_video_indicator', verbose_name='Indicador Zoom')
-    congregation = models.ForeignKey(Congregation, on_delete=models.PROTECT, verbose_name='Congregação')
+    president = models.ForeignKey(Person, on_delete=models.PROTECT, null=True, verbose_name='Presidente', blank=True)
+    indicator_1 = models.ForeignKey(Person, on_delete=models.PROTECT, null=True, related_name='+', verbose_name='Indicador 1', blank=True)
+    indicator_2 = models.ForeignKey(Person, on_delete=models.PROTECT, null=True, related_name='+', verbose_name='Indicador 2', blank=True)
+    mic_1 = models.ForeignKey(Person, on_delete=models.PROTECT, null=True, related_name='+', verbose_name='Microfone 1', blank=True)
+    mic_2 = models.ForeignKey(Person, on_delete=models.PROTECT, null=True, related_name='+', verbose_name='Microfone 2', blank=True)
+    note_sound_table = models.ForeignKey(Person, on_delete=models.PROTECT, null=True, related_name='audio_video_operator', verbose_name='Notebook/mesa de som', blank=True)
+    zoom_indicator = models.ForeignKey(Person, on_delete=models.PROTECT, null=True, related_name='audio_video_indicator', verbose_name='Indicador Zoom', blank=True)
+    congregation = models.ForeignKey(Congregation, on_delete=models.CASCADE, verbose_name='Congregação')
 
     # as partes (relação ManyToMany) foram definidas na classe Parts
 

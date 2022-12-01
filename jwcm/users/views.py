@@ -48,7 +48,11 @@ def user_register(request):
                 new_congregation = congregation_form.save()
                 user = user_form.save()
                 profile = Profile.objects.create(congregation=new_congregation, user=user)
-                congregationavailability = CongregationAvailability.objects.create(lpw=new_congregation)
+
+                for weekday in range(0, 7):
+                    congregation_availability = CongregationAvailability.objects.create(weekday=weekday)
+                    congregation_availability.congregation.add(new_congregation)
+
                 messages.success(request, 'Usuário e Congregação cadastrados com sucesso.')
                 return HttpResponseRedirect(r('login'))
             else:

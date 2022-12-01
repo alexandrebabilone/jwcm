@@ -16,7 +16,7 @@
     {% csrf_token %}
     {{ form|crispy }}
 
-    <a href="{{person.personavailability.get_update_url}}" class="btn btn-warning" title="Disponibilidade TPL">Disponibilidade TPL <i class="fas fa-pencil"></i></a>
+    <a href="{{person.get_lpw_update_url}}" class="btn btn-warning" title="Disponibilidade TPL">Disponibilidade TPL <i class="fas fa-pencil"></i></a>
     <br>
 
     <button type="submit" class="btn btn-success mt-3">

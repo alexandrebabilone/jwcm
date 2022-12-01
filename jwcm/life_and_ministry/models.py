@@ -37,10 +37,10 @@ class Part(models.Model):
 class LifeAndMinistryAssignment(models.Model):
     part = models.ForeignKey(Part, on_delete=models.CASCADE, verbose_name='Parte')
     owner = models.ForeignKey(Person, verbose_name='Dono da parte',
-                                  on_delete=models.PROTECT, null=True, related_name='owner')
+                                  on_delete=models.PROTECT, null=True, related_name='owner', blank=True)
     assistant = models.ForeignKey(Person, verbose_name='Ajudante',
                                   on_delete=models.PROTECT, null=True,
-                                  related_name='helper')
+                                  related_name='helper', blank=True)
     meeting = models.ManyToManyField(Meeting, verbose_name='Reunião')
 
     def __str__(self):

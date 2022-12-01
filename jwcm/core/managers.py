@@ -2,6 +2,7 @@ from django.db import models
 #como importar os choices se nao posso importar a classe Person?
 
 
+
 class CongregationQuerySet(models.QuerySet):
     def select_host_congregations(self):
         return self.filter(host=True)
@@ -63,5 +64,11 @@ class PersonQuerySet(models.QuerySet):
     def men_student_parts_per_congregation(self, congregation):
         return self.filter(congregation=congregation).filter(gender=0).filter(student_parts=True).filter(privilege=2)
 
+    def publisher_per_congregation_and_weekday_to_morning(self, congregation, weekday):
+        return self.filter(congregation=congregation).filter(personavailability__weekday=weekday, personavailability__morning=True)
 
-#PeriodManager = models.Manager.from_queryset(PeriodQuerySet)
+    def publisher_per_congregation_and_weekday_to_afternoon(self, congregation, weekday):
+        return self.filter(congregation=congregation).filter(personavailability__weekday=weekday, personavailability__afternoon=True)
+
+    def publisher_per_congregation_and_weekday_to_night(self, congregation, weekday):
+        return self.filter(congregation=congregation).filter(personavailability__weekday=weekday, personavailability__night=True)

@@ -1,4 +1,5 @@
 from jwcm.core.models import Person
+from jwcm.lpw.models import PersonAvailability
 
 
 def batch_read_and_create_person(df_batch, congregation):
@@ -96,6 +97,13 @@ def batch_read_and_create_person(df_batch, congregation):
                         student_parts=student_parts,
                         congregation=congregation)
 
+
         list_person.append(person)
 
     Person.objects.bulk_create(list_person)
+
+    for person in list_person:
+        # após salvar o objeto no banco, crio o objeto relacionado à ele para cada dia da semana
+        for weekday in range(0, 7):
+            person_availability = PersonAvailability.objects.create(weekday=weekday, morning=False, afternoon=False, night=False)
+            person_availability.person.add(person)

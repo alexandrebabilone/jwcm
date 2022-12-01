@@ -1,4 +1,4 @@
-from django.views.generic import TemplateView, UpdateView, ListView, CreateView, DeleteView, FormView
+from django.views.generic import TemplateView, UpdateView, ListView, CreateView, DeleteView
 from django.http import HttpResponse, HttpResponseRedirect
 from jwcm.core.forms import BatchPersonForm
 from django.shortcuts import render, resolve_url as r
@@ -80,8 +80,11 @@ class PersonCreate(SuccessMessageMixin, CreateView):
         return super().form_valid(form)
 
     def get_success_message(self, cleaned_data):
-        #após salvar o objeto no banco, crio o objeto relacionado à ele
-        personavailability = PersonAvailability.objects.create(lpw=self.object)
+        #após salvar o objeto no banco, crio o objeto relacionado à ele para cada dia da semana
+        for weekday in range(0,7):
+            person_availability = PersonAvailability.objects.create(weekday=weekday, morning=False, afternoon=False, night=False)
+            person_availability.person.add(self.object)
+
         return f'O publicador {self.object.full_name} foi registrado com sucesso.'
 #******************** UPDATE ********************#
 class CongregationUpdate(SuccessMessageMixin, UpdateView):

@@ -6,7 +6,7 @@ from django.contrib.auth.models import User
 
 class Profile(models.Model):
     telephone = models.CharField(max_length=16, verbose_name='Telefone', null=True)
-    congregation = models.ForeignKey(Congregation, on_delete=models.PROTECT, null=True)
+    congregation = models.ForeignKey(Congregation, on_delete=models.CASCADE, null=True)
     user = models.OneToOneField(User, on_delete=models.PROTECT)
 
     def __str__(self):

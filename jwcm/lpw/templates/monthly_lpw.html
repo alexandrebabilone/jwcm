@@ -1,30 +1,30 @@
 {% extends "base.html" %}
 {% load crispy_forms_tags %}
 
-{% block title %}{{ title }}{% endblock %}
-
-
-{% block menu_items %}
-    {% include 'core/menu_items.html' %}
-{% endblock %}
-
+{% block title %}Testemunho Público Local (TPL){% endblock %}
 
 {% block content%}
-<h3>{{ title }}</h3>
+<h3>Testemunho Público Local (TPL)</h3>
 <hr>
 <form method="POST" id="form">
     {% csrf_token %}
     {{ form|crispy }}
 
-    <a href="{{congregation.get_lpw_update_url}}" class="btn btn-warning" title="TPL">TPL <i class="fas fa-pencil"></i></a>
-    <br>
-
-    <button type="submit" class="btn btn-success mt-3">
-        <i class="fas fa-check"></i> {{ button }}
+    <button type="submit" class="btn btn-success mt-3" name="button_load">
+        <i class="fas fa-check"></i> Carregar
     </button>
+    <hr><br>
+
+    {% if enable_button_save %}
+    {{ formset|crispy }}
+    <hr><br>
+    <button type="submit" class="btn btn-success mt-3" name="button_save">
+         Salvar alterações
+    </button>
+    {% endif %}
+
 </form>
 {% endblock %}
-
 
 {% block scripts %}
 <script>
